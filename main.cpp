@@ -1,15 +1,16 @@
 #define MAX_CONNECTIONS 5
 #define BUFFER_SIZE 1024
-#define PORT 4016
+#define PORT 5000
 #define TIMEOUT -1
 #define MAX_EVENTS 10
 
 // TODO: double check on the capabilities specified, not sure we have to handle every of those
-#define MSG_SERV_CAP_LS		"CAP * LS :multi-prefix away-notify"
-#define MSG_SERV_CAP_END	"CAP END"
+#define MSG_SERV_CAP_LS		"CAP * LS :multi-prefix\r\n"
+#define MSG_SERV_CAP_END	"CAP END\r\n"
 
 #define MSG_CLI_CAP_LS		"CAP LS"
 #define MSG_CLI_CAP_END		"CAP END"
+#define MSG_CLI_PASS		"PASS "
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -139,31 +140,49 @@ int main(void) {
 				clientBuffers[events[i].data.fd] += buff;
 
 				// TODO: I'm not sure messages are only terminated by \n, possibly also terminated by \r
-				size_t pos = clientBuffers[events[i].data.fd].find('\n');
+				size_t pos = clientBuffers[events[i].data.fd].find("\r\n");
 				if (pos != std::string::npos) {
-                    std::string message = clientBuffers[events[i].data.fd].substr(0, pos);
-                    std::cout << "Received from client " << events[i].data.fd << ": " << message << std::endl;
+					std::string message = clientBuffers[events[i].data.fd].substr(0, pos);
+					std::cout << "Received from client " << events[i].data.fd << ": " << message << std::endl;
 
 					// TODO: Here we should handle the message received before cleaning it
 
-					if (std::strncmp(buff, MSG_CLI_CAP_LS, 6) == 0) {
+					if (std::strncmp(message.c_str(), MSG_CLI_CAP_LS, std::strlen(MSG_CLI_CAP_LS)) == 0) {
 						if (send(events[i].data.fd, MSG_SERV_CAP_LS, std::strlen(MSG_SERV_CAP_LS), 0) < 0) {
 							std::cerr << "send error: " << strerror(errno) << std::endl;
 							epoll_ctl(epollFd, EPOLL_CTL_DEL, events[i].data.fd, NULL);
 							close(events[i].data.fd);
 							continue;
 						}
-					} else if (std::strncmp(buff, MSG_CLI_CAP_END, 6) == 0) {
+					} else if (std::strncmp(message.c_str(), MSG_CLI_CAP_END, std::strlen(MSG_CLI_CAP_END)) == 0) {
 						if (send(events[i].data.fd, MSG_SERV_CAP_END, std::strlen(MSG_SERV_CAP_END), 0) < 0) {
 							std::cerr << "send error: " << strerror(errno) << std::endl;
 							epoll_ctl(epollFd, EPOLL_CTL_DEL, events[i].data.fd, NULL);
 							close(events[i].data.fd);
 							continue;
 						}
-					}
+					} else if (std::strncmp(message.c_str(), MSG_CLI_PASS, std::strlen(MSG_CLI_PASS)) == 0) {
+						// Extract the password
+						std::string receivedPass = clientBuffers[events[i].data.fd].substr(
+							std::strlen(MSG_CLI_PASS), pos - std::strlen(MSG_CLI_PASS)
+						);
 
-                    clientBuffers[events[i].data.fd].erase(0, pos + 1);
-                }
+						std::string correctPass = "gobelin123";
+
+						if (receivedPass != correctPass) {
+							std::string errorMsg = "464 * :Password incorrect\r\n";
+							send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
+							epoll_ctl(epollFd, EPOLL_CTL_DEL, events[i].data.fd, NULL);
+							close(events[i].data.fd);
+							clientBuffers.erase(events[i].data.fd);
+							continue;
+						}
+
+						std::cout << "Client " << events[i].data.fd << " authenticated successfully." << std::endl;
+						// Now, wait for NICK and USER commands from the client
+					}
+					clientBuffers[events[i].data.fd].erase(0, pos + 2);
+				}
 			}
 		}
 	}

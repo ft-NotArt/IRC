@@ -42,3 +42,13 @@ fclean		:	clean
 re			:	fclean all
 
 .PHONY		=	all clean fclean re
+
+# DEBUG
+
+irssi		:
+				irssi -c localhost -p 5000 -n gobelin -w gobelin123
+
+nc			:
+				nc localhost 5000
+
+.PHONY		=	connect_irssi connect_nc
