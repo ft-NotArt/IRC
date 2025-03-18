@@ -1,16 +1,20 @@
 #define MAX_CONNECTIONS 5
 #define BUFFER_SIZE 1024
-#define PORT 5000
+#define PORT 5001
 #define TIMEOUT -1
 #define MAX_EVENTS 10
 
 // TODO: double check on the capabilities specified, not sure we have to handle every of those
 #define MSG_SERV_CAP_LS		"CAP * LS :multi-prefix\r\n"
-#define MSG_SERV_CAP_END	"CAP END\r\n"
+#define MSG_SERV_CAP_ACK	"CAP * ACK multi-prefix\r\n"
+#define MSG_SERV_MOTD		"001 gobelin :Welcome to the Internet Relay Chat Network gobelin\r\n"
+#define MSG_SERV_PONG		"PONG "
 
 #define MSG_CLI_CAP_LS		"CAP LS"
 #define MSG_CLI_CAP_END		"CAP END"
 #define MSG_CLI_PASS		"PASS "
+#define MSG_CLI_CAP_REQ		"CAP REQ :multi-prefix"
+#define MSG_CLI_PING		"PING "
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -30,6 +34,36 @@
 // TODO: When passing to proper Object-oriented code, find a correct place for this
 std::map<int, std::string> clientBuffers;
 
+#define GREEN "\033[1;32m"
+#define RED "\033[1;31m"
+
+
+void printBuffer(const std::string& buffer, const std::string& colorStart = "") {
+    const std::string colorEnd = "\033[0m"; // Reset color
+
+    std::cout << "|1|" << colorStart;
+    for (std::size_t i = 0; i < buffer.length(); i++) {
+        if (buffer[i] == '\r')
+            std::cout << "\\r";  // Make carriage return visible
+        else if (buffer[i] == '\n')
+            std::cout << "\\n";  // Make newline visible and move to next line
+        else
+            std::cout << buffer[i];
+    }
+    std::cout << colorEnd << "|2|" << std::endl;
+}
+
+// true = successs
+bool sendMsg(int fd, int epollFd, const char *msg) {
+	printBuffer(msg, RED);
+	if (send(fd, msg, std::strlen(msg), 0) < 0) {
+		std::cerr << "send error: " << strerror(errno) << std::endl;
+		epoll_ctl(epollFd, EPOLL_CTL_DEL, fd, NULL);
+		close(fd);
+		return false;
+	}
+	return true;
+}
 
 int main(void) {
 	int servSocket = socket(AF_INET, SOCK_STREAM | O_NONBLOCK, 0);
@@ -136,30 +170,39 @@ int main(void) {
 				}
 
 				buff[readBytes] = '\0';
-				std::cout << "_ " << buff << " _" << std::endl;
+				printBuffer(buff, GREEN);
 
 				clientBuffers[events[i].data.fd] += buff;
 
 				// TODO: I'm not sure messages are only terminated by \n, possibly also terminated by \r
 				size_t pos = clientBuffers[events[i].data.fd].find("\r\n");
-				if (pos != std::string::npos) {
+				while (pos != std::string::npos) {
 					std::string message = clientBuffers[events[i].data.fd].substr(0, pos);
+
 					std::cout << "Received from client " << events[i].data.fd << ": " << message << std::endl;
+					// printBuffer(message, RED);
 
 					// TODO: Here we should handle the message received before cleaning it
 
 					if (std::strncmp(message.c_str(), MSG_CLI_CAP_LS, std::strlen(MSG_CLI_CAP_LS)) == 0) {
-						if (send(events[i].data.fd, MSG_SERV_CAP_LS, std::strlen(MSG_SERV_CAP_LS), 0) < 0) {
-							std::cerr << "send error: " << strerror(errno) << std::endl;
-							epoll_ctl(epollFd, EPOLL_CTL_DEL, events[i].data.fd, NULL);
-							close(events[i].data.fd);
+						if (!sendMsg(events[i].data.fd, epollFd, MSG_SERV_CAP_LS)) {
 							continue;
 						}
 					} else if (std::strncmp(message.c_str(), MSG_CLI_CAP_END, std::strlen(MSG_CLI_CAP_END)) == 0) {
-						if (send(events[i].data.fd, MSG_SERV_CAP_END, std::strlen(MSG_SERV_CAP_END), 0) < 0) {
-							std::cerr << "send error: " << strerror(errno) << std::endl;
-							epoll_ctl(epollFd, EPOLL_CTL_DEL, events[i].data.fd, NULL);
-							close(events[i].data.fd);
+						if (!sendMsg(events[i].data.fd, epollFd, MSG_SERV_MOTD)) {
+							continue;
+						}
+					} else if (std::strncmp(message.c_str(), MSG_CLI_CAP_REQ, std::strlen(MSG_CLI_CAP_REQ)) == 0) {
+						if (!sendMsg(events[i].data.fd, epollFd, MSG_SERV_CAP_ACK)) {
+							continue;
+						}
+					} else if (std::strncmp(message.c_str(), MSG_CLI_PING, std::strlen(MSG_CLI_PING)) == 0) {
+						std::string token = message.substr(std::strlen(MSG_CLI_PING));
+						std::cout << "Token: `" << token << "`" << std::endl;
+
+						const std::string irc = "[Internet Relay Chat] ";
+						std::string pongMsg = MSG_SERV_PONG + irc + token + "\r\n";
+						if (!sendMsg(events[i].data.fd, epollFd, pongMsg.c_str())) {
 							continue;
 						}
 					} else if (std::strncmp(message.c_str(), MSG_CLI_PASS, std::strlen(MSG_CLI_PASS)) == 0) {
@@ -183,6 +226,7 @@ int main(void) {
 						// Now, wait for NICK and USER commands from the client
 					}
 					clientBuffers[events[i].data.fd].erase(0, pos + 2);
+					pos = clientBuffers[events[i].data.fd].find("\r\n");
 				}
 			}
 		}
