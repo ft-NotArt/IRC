@@ -1,20 +1,37 @@
 #define MAX_CONNECTIONS 5
 #define BUFFER_SIZE 1024
 #define PORT 4016
-#define TIMEOUT 30000
+#define TIMEOUT -1
+#define MAX_EVENTS 10
 
-#include <cstdlib>
+// TODO: double check on the capabilities specified, not sure we have to handle every of those
+#define MSG_SERV_CAP_LS		"CAP * LS :multi-prefix away-notify"
+#define MSG_SERV_CAP_END	"CAP END"
+
+#define MSG_CLI_CAP_LS		"CAP LS"
+#define MSG_CLI_CAP_END		"CAP END"
+
 #include <unistd.h>
-#include <cstring>
-#include <cerrno>
-#include <iostream>
+#include <fcntl.h>
 #include <sys/socket.h>
 #include <sys/epoll.h>
 #include <sys/types.h>
 #include <netinet/in.h>
 
+#include <cstdlib>
+#include <cstring>
+#include <cerrno>
+#include <iostream>
+#include <string>
+#include <map>
+
+
+// TODO: When passing to proper Object-oriented code, find a correct place for this
+std::map<int, std::string> clientBuffers;
+
+
 int main(void) {
-	int servSocket = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
+	int servSocket = socket(AF_INET, SOCK_STREAM | O_NONBLOCK, 0);
 	if (servSocket < 0) {
 		std::cerr << "socket error: " << strerror(errno) << std::endl;
 		return EXIT_FAILURE;
@@ -25,7 +42,6 @@ int main(void) {
 	servAddr.sin_family = AF_INET;
 	servAddr.sin_addr.s_addr = INADDR_ANY;
 	servAddr.sin_port = htons(PORT);
-
 
 	if (bind(servSocket, (struct sockaddr *) &servAddr, sizeof(servAddr)) < 0) {
 		std::cerr << "bind error: " << strerror(errno) << std::endl;
@@ -43,7 +59,7 @@ int main(void) {
 		return EXIT_FAILURE;
 	}
 
-	epoll_event event;
+	epoll_event event, events[MAX_EVENTS];
 	event.events = EPOLLIN;
 	event.data.fd = servSocket;
 
@@ -55,62 +71,101 @@ int main(void) {
 	while (true) {
 		std::cout << "Waiting for events..." << std::endl;
 
-		int numEvents = epoll_wait(epollFd, &event, 1, TIMEOUT);
+		int numEvents = epoll_wait(epollFd, events, MAX_EVENTS, TIMEOUT);
 		if (numEvents < 0) {
 			std::cerr << "epoll_wait error: " << strerror(errno) << std::endl;
 			return EXIT_FAILURE;
 		}
+
+		// TODO: prolly remove this as it won't happen
 		if (numEvents == 0) {
 			std::cout << "No events within timeout period" << std::endl;
 			continue;
 		}
 
-		// std::cout << "Event received from fd " << event.data.fd << std::endl;
-		if (event.data.fd == servSocket) {
-			int clientSocket = accept(servSocket, NULL, NULL);
-			if (clientSocket < 0) {
-				std::cerr << "accept error: " << strerror(errno) << std::endl;
+		for (int i = 0; i < numEvents; i++) {
+			if (events[i].events & (EPOLLHUP | EPOLLERR)) {
+				std::cout << "Client " << events[i].data.fd << " disconnected unexpectedly." << std::endl;
+				epoll_ctl(epollFd, EPOLL_CTL_DEL, events[i].data.fd, NULL);
+				close(events[i].data.fd);
+				clientBuffers.erase(events[i].data.fd);
 				continue;
 			}
-			std::cout << "Accepted new client: " << clientSocket << std::endl;
+			if (events[i].data.fd == servSocket) {
+				int clientSocket ;
+				while ((clientSocket = accept(servSocket, NULL, NULL)) > 0) {
+					std::cout << "Accepted new client: " << clientSocket << std::endl;
+					epoll_event clientEvent;
+					clientEvent.events = EPOLLIN;
+					clientEvent.data.fd = clientSocket;
+					if (epoll_ctl(epollFd, EPOLL_CTL_ADD, clientSocket, &clientEvent) < 0) {
+						std::cerr << "epoll_ctl (client) error: " << strerror(errno) << std::endl;
+						close(clientSocket);
+					}
+				}
+				if (clientSocket == -1 && (errno != EAGAIN && errno != EWOULDBLOCK)) {
+					std::cerr << "accept error: " << strerror(errno) << std::endl;
+				}
+			}
+			// else if (events[i].events & EPOLLOUT) {
+				// if (send(events[i].data.fd, "CAP * LS", 8, 0) < 0) {
+					// std::cerr << "send error: " << strerror(errno) << std::endl;
+					// epoll_ctl(epollFd, EPOLL_CTL_DEL, events[i].data.fd, NULL);
+					// close(events[i].data.fd);
+					// continue;
+				// }
+			// }
+			else {
+				char buff[BUFFER_SIZE];
+				int readBytes = recv(events[i].data.fd, buff, sizeof(buff) - 1, 0);
 
-			epoll_event clientEvent;
-			clientEvent.events = EPOLLIN;
-			clientEvent.data.fd = clientSocket;
-			if (epoll_ctl(epollFd, EPOLL_CTL_ADD, clientSocket, &clientEvent) < 0) {
-				std::cerr << "epoll_ctl (client) error: " << strerror(errno) << std::endl;
-				close(clientSocket);
-				continue;
-			}
-		} else if (event.events == EPOLLOUT) {
-			if (send(event.data.fd, "CAP * LS", 8, 0) < 0) {
-				std::cerr << "send error: " << strerror(errno) << std::endl;
-				epoll_ctl(epollFd, EPOLL_CTL_DEL, event.data.fd, NULL);
-				close(event.data.fd);
-				continue;
-			}
-		} else {
-			char buff[BUFFER_SIZE];
-			int readBytes = recv(event.data.fd, buff, sizeof(buff) - 1, 0);
-			if (readBytes < 0) {
-				std::cerr << "read error on fd " << event.data.fd << ": " << strerror(errno) << std::endl;
-				epoll_ctl(epollFd, EPOLL_CTL_DEL, event.data.fd, NULL);
-				close(event.data.fd);
-				continue;
-			}
-			if (readBytes == 0) {
-				std::cout << "Client " << event.data.fd << " disconnected." << std::endl;
-				epoll_ctl(epollFd, EPOLL_CTL_DEL, event.data.fd, NULL);
-				close(event.data.fd);
-				continue;
-			}
+				if (readBytes < 0) {
+					std::cerr << "read error on fd " << events[i].data.fd << ": " << strerror(errno) << std::endl;
+					epoll_ctl(epollFd, EPOLL_CTL_DEL, events[i].data.fd, NULL);
+					close(events[i].data.fd);
+					clientBuffers.erase(events[i].data.fd);
+					continue;
+				}
+				if (readBytes == 0) {
+					std::cout << "Client " << events[i].data.fd << " disconnected." << std::endl;
+					epoll_ctl(epollFd, EPOLL_CTL_DEL, events[i].data.fd, NULL);
+					close(events[i].data.fd);
+					clientBuffers.erase(events[i].data.fd);
+					continue;
+				}
 
-			buff[readBytes] = '\0';
-			std::cout << "Received from client " << event.data.fd << ": " << buff << std::endl;
+				buff[readBytes] = '\0';
 
+				clientBuffers[events[i].data.fd] += buff;
+
+				// TODO: I'm not sure messages are only terminated by \n, possibly also terminated by \r
+				size_t pos = clientBuffers[events[i].data.fd].find('\n');
+				if (pos != std::string::npos) {
+                    std::string message = clientBuffers[events[i].data.fd].substr(0, pos);
+                    std::cout << "Received from client " << events[i].data.fd << ": " << message << std::endl;
+
+					// TODO: Here we should handle the message received before cleaning it
+
+					if (std::strncmp(buff, MSG_CLI_CAP_LS, 6) == 0) {
+						if (send(events[i].data.fd, MSG_SERV_CAP_LS, std::strlen(MSG_SERV_CAP_LS), 0) < 0) {
+							std::cerr << "send error: " << strerror(errno) << std::endl;
+							epoll_ctl(epollFd, EPOLL_CTL_DEL, events[i].data.fd, NULL);
+							close(events[i].data.fd);
+							continue;
+						}
+					} else if (std::strncmp(buff, MSG_CLI_CAP_END, 6) == 0) {
+						if (send(events[i].data.fd, MSG_SERV_CAP_END, std::strlen(MSG_SERV_CAP_END), 0) < 0) {
+							std::cerr << "send error: " << strerror(errno) << std::endl;
+							epoll_ctl(epollFd, EPOLL_CTL_DEL, events[i].data.fd, NULL);
+							close(events[i].data.fd);
+							continue;
+						}
+					}
+
+                    clientBuffers[events[i].data.fd].erase(0, pos + 1);
+                }
+			}
 		}
-
-
 	}
 
 	epoll_ctl(epollFd, EPOLL_CTL_DEL, servSocket, &event);
