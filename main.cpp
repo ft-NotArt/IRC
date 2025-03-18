@@ -136,6 +136,7 @@ int main(void) {
 				}
 
 				buff[readBytes] = '\0';
+				std::cout << "_ " << buff << " _" << std::endl;
 
 				clientBuffers[events[i].data.fd] += buff;
 
