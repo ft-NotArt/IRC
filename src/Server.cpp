@@ -10,6 +10,8 @@ Server::Server(const std::string &password, const int port) : password(password)
 
 /* Methods */
 
+void Server::start(void) {}
+
 void Server::addUser(int fd, const User *user) {
 	this->users[fd] = user ;
 }
