@@ -210,6 +210,7 @@ void Server::acceptClient() {
 }
 
 // TODO: Add throw
+// TODO ? maybe sendMsg should take care of adding "\r\n" to the msg, so that it prevents repetitions in other places of the code
 void	Server::sendMsg(int fd, const std::string &msg) {
 	printBuffer( "[SRV->CLI] " + msg, BLUE);
 	if (send(fd, msg.c_str(), msg.size(), 0) < 0) {

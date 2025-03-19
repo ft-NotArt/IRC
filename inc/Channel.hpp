@@ -22,7 +22,7 @@ enum {
 
 class Channel {
 	private:
-		// const Server					&server ;
+		Server					& const	server ;
 		const std::string				name ;
 		std::string						password ;
 		std::string						topic ;
@@ -35,10 +35,9 @@ class Channel {
 
 	public:
 	// TODO: There should be parsing on channel name, idk at which point of the code though
-	// const Server &server
-	// server(server),
+
 	// , topic_restrict(false)
-		Channel(const std::string &name) ;
+		Channel(const std::string &name, Server & const server) ;
 
 		const std::string						&getName()			const	{ return this->name ; } ;
 		const std::string						&getPassword()		const	{ return this->password ; } ;

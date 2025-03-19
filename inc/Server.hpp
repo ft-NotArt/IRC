@@ -11,11 +11,12 @@ class User ;
 #include <set>
 #include <sys/epoll.h>
 
+#define SERVER_NAME		"Internet Relay Chat"
+
 #define MAX_CONNECTIONS 5
 #define MAX_EVENTS 10
 #define BUFFER_SIZE 1024
 
-// TODO: double check on the capabilities specified, not sure we have to handle every of those
 #define MSG_SERV_CAP_LS		"CAP * LS :multi-prefix\r\n"
 #define MSG_SERV_CAP_ACK	"CAP * ACK multi-prefix\r\n"
 #define MSG_SERV_MOTD		"001 gobelin :Welcome to the Internet Relay Chat Network gobelin\r\n"
@@ -35,7 +36,7 @@ class Server {
 		int							epollFd ;
 		epoll_event					event, events[MAX_EVENTS] ;
 		std::map<int, std::string>	clientBuffers ;
-		std::set<Channel>			channels ;
+		std::set<Channel>			channels ; // Shouldn't this be a std::map<std::string name, Channel> in order to know what channel already exist ?
 		std::map<int, const User *>	users ;
 
 	public:
@@ -57,5 +58,12 @@ class Server {
 		void 	run(void) ;
 
 		void	acceptClient() ;
-		void 	sendMsg(int fd, const std::string &buffer) ;
+		void 	sendMsg(int fd, const std::string &msg) ;
+
+
+
+		void	RPL_WELCOME(const User *client) ;
+		void	RPL_NOTOPIC(const User *client, const Channel &channel) ;
+		void	RPL_TOPIC(const User *client, const Channel &channel) ;
+		void	RPL_TOPICWHOTIME(const User *client, const Channel &channel) ;
 };

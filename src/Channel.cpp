@@ -5,7 +5,7 @@
 
 /* Constructor */
 
-Channel::Channel(const std::string &name) : name(name) {
+Channel::Channel(const std::string &name, Server & const server) : name(name), server(server) {
 	this->password = "" ;
 	this->topic = "" ;
 	this->topic_change.first = NULL ;
@@ -62,7 +62,11 @@ void Channel::join(const User *user, const std::string &password) {
 
 	// TODO: send JOIN msg
 
-	// TODO: send RPL_TOPIC and RPL_TOPICWHOTIME
+	if (this->topic != "") {
+		this->server.RPL_TOPIC(user, *this) ;
+		this->server.RPL_TOPICWHOTIME(user, *this) ;
+	} else
+		this->server.RPL_NOTOPIC(user, *this) ;
 
 	// TODO: send RPL_NAMREPLY and RPL_ENDOFNAMES (NAMES cmd)
 
