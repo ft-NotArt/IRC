@@ -70,5 +70,6 @@ class Server {
 		void	RPL_NAMREPLY(const User *client, const Channel &channel) ;
 		void	RPL_ENDOFNAMES(const User *client, const Channel &channel) ;
 
+		void	MSG_PONG(const User *client, const std::string &token) ;
 		void	MSG_INVITE(const User *client, const User *invited, const Channel &channel) ;
 };
