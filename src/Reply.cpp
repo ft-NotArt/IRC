@@ -9,11 +9,9 @@
 /* Replies */
 // TODO: put every this->sendMsg in try catch when sendMsg will throw
 
-void	Server::RPL_WELCOME(const User *client) {
-	std::string rpl(":") ;
+void	Server::RPL_WELCOME(const User *client) const {
+	std::string rpl("001 ") ;
 
-	rpl += SERVER_NAME ;
-	rpl += " 001 " ;
 	rpl += client->getNickname() ;
 
 	rpl += " :Welcome to the " ;
@@ -23,9 +21,24 @@ void	Server::RPL_WELCOME(const User *client) {
 	rpl += client->getNickname() ;
 
 	this->sendMsg(client->getFd(), rpl) ;
+
+	// FIXME: This version doesn't work, above version does
+	// std::string rpl(":") ;
+
+	// rpl += SERVER_NAME ;
+	// rpl += " 001 " ;
+	// rpl += client->getNickname() ;
+
+	// rpl += " :Welcome to the " ;
+	// rpl += SERVER_NAME ;
+	// rpl += " Network, " ;
+
+	// rpl += client->getNickname() ;
+
+	// this->sendMsg(client->getFd(), rpl) ;
 }
 
-void	Server::RPL_NOTOPIC(const User *client, const Channel &channel) {
+void	Server::RPL_NOTOPIC(const User *client, const Channel &channel) const {
 	std::string rpl(":") ;
 
 	rpl += SERVER_NAME ;
@@ -41,7 +54,7 @@ void	Server::RPL_NOTOPIC(const User *client, const Channel &channel) {
 }
 
 // Use this reply only if a topic is set, otherwise, use RPL_NOTOPIC
-void	Server::RPL_TOPIC(const User *client, const Channel &channel) {
+void	Server::RPL_TOPIC(const User *client, const Channel &channel) const {
 	std::string rpl(":") ;
 
 	rpl += SERVER_NAME ;
@@ -58,7 +71,7 @@ void	Server::RPL_TOPIC(const User *client, const Channel &channel) {
 }
 
 // Use this reply only if a topic is set, otherwise, use RPL_NOTOPIC
-void	Server::RPL_TOPICWHOTIME(const User *client, const Channel &channel) {
+void	Server::RPL_TOPICWHOTIME(const User *client, const Channel &channel) const {
 	std::string rpl(":") ;
 
 	rpl += SERVER_NAME ;
@@ -80,7 +93,7 @@ void	Server::RPL_TOPICWHOTIME(const User *client, const Channel &channel) {
 	this->sendMsg(client->getFd(), rpl) ;
 }
 
-void	Server::RPL_INVITING(const User *client, const User *invited, const Channel &channel) {
+void	Server::RPL_INVITING(const User *client, const User *invited, const Channel &channel) const {
 	std::string rpl(":") ;
 
 	rpl += SERVER_NAME ;
@@ -97,7 +110,7 @@ void	Server::RPL_INVITING(const User *client, const User *invited, const Channel
 }
 
 // We put '=' as the symbol for the type of the channel as it's the only type of channel we have
-void	Server::RPL_NAMREPLY(const User *client, const Channel &channel) {
+void	Server::RPL_NAMREPLY(const User *client, const Channel &channel) const {
 	std::string rpl(":") ;
 
 	rpl += SERVER_NAME ;
@@ -113,7 +126,7 @@ void	Server::RPL_NAMREPLY(const User *client, const Channel &channel) {
 	this->sendMsg(client->getFd(), rpl) ;
 }
 
-void	Server::RPL_ENDOFNAMES(const User *client, const Channel &channel) {
+void	Server::RPL_ENDOFNAMES(const User *client, const Channel &channel) const {
 	std::string rpl(":") ;
 
 	rpl += SERVER_NAME ;

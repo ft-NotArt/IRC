@@ -17,11 +17,6 @@ class User ;
 #define MAX_EVENTS 10
 #define BUFFER_SIZE 1024
 
-#define MSG_SERV_CAP_LS		"CAP * LS :multi-prefix\r\n"
-#define MSG_SERV_CAP_ACK	"CAP * ACK multi-prefix\r\n"
-#define MSG_SERV_MOTD		"001 gobelin :Welcome to the Internet Relay Chat Network gobelin\r\n"
-#define MSG_SERV_PONG		"PONG "
-
 #define MSG_CLI_CAP_LS		"CAP LS"
 #define MSG_CLI_CAP_END		"CAP END"
 #define MSG_CLI_PASS		"PASS "
@@ -58,17 +53,19 @@ class Server {
 		void 	run(void) ;
 
 		void	acceptClient() ;
-		void 	sendMsg(int fd, const std::string &msg) ;
+		void	receiveMsg(int fd) ;
+		void	processMsg(int fd) ;
+		void 	sendMsg(int fd, std::string msg) const ;
 
 
 
-		void	RPL_WELCOME(const User *client) ;
-		void	RPL_NOTOPIC(const User *client, const Channel &channel) ;
-		void	RPL_TOPIC(const User *client, const Channel &channel) ;
-		void	RPL_TOPICWHOTIME(const User *client, const Channel &channel) ;
-		void	RPL_INVITING(const User *client, const User *invited, const Channel &channel) ;
-		void	RPL_NAMREPLY(const User *client, const Channel &channel) ;
-		void	RPL_ENDOFNAMES(const User *client, const Channel &channel) ;
+		void	RPL_WELCOME(const User *client)													const ;
+		void	RPL_NOTOPIC(const User *client, const Channel &channel)							const ;
+		void	RPL_TOPIC(const User *client, const Channel &channel)							const ;
+		void	RPL_TOPICWHOTIME(const User *client, const Channel &channel)					const ;
+		void	RPL_INVITING(const User *client, const User *invited, const Channel &channel)	const ;
+		void	RPL_NAMREPLY(const User *client, const Channel &channel)						const ;
+		void	RPL_ENDOFNAMES(const User *client, const Channel &channel)						const ;
 
 
 		void	MSG_CAP_LS(const User *client) ;

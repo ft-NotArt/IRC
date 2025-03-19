@@ -5,7 +5,7 @@
 
 /* Constructor */
 
-Channel::Channel(const std::string &name, Server & const server) : name(name), server(server) {
+Channel::Channel(const std::string &name, const Server &server) : server(server), name(name) {
 	this->password = "" ;
 	this->topic = "" ;
 	this->topic_change.first = NULL ;
@@ -76,5 +76,4 @@ void Channel::join(const User *user, const std::string &password) {
 
 	this->server.RPL_NAMREPLY(user, *this) ;
 	this->server.RPL_ENDOFNAMES(user, *this) ;
-
 }

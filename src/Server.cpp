@@ -13,25 +13,28 @@
 #include "Server.hpp"
 
 /* Temp */
-#define GREEN "\033[1;32m"
-#define BLUE "\033[1;34m"
+#define GREEN "\e[1;32m"
+#define LIGHT_GREEN "\e[1;92m"
+#define BLUE "\e[1;34m"
+#define GRAY "\e[1;90m"
+#define RESET "\e[0m"
 
-void printBuffer(const std::string& buffer, const std::string& colorStart = "") {
-	const std::string colorEnd = "\033[0m"; // Reset color
+#include <sstream>
+static std::string debugShowInvisibleChar(const std::string& buffer) {
+	std::ostringstream oss;
 
-	std::cout << "|1|" << colorStart;
+	oss << "`";
 	for (std::size_t i = 0; i < buffer.length(); i++) {
 		if (buffer[i] == '\r')
-			std::cout << "\\r";  // Make carriage return visible
+			oss << "\\r";  // Make carriage return visible
 		else if (buffer[i] == '\n')
-			std::cout << "\\n";  // Make newline visible and move to next line
+			oss << "\\n";  // Make newline visible and move to next line
 		else
-			std::cout << buffer[i];
+			oss << buffer[i];
 	}
-	std::cout << colorEnd << "|2|" << std::endl;
+	oss << "`";
+	return oss.str();
 }
-
-
 /* End temp */
 
 /* Constructor */
@@ -117,71 +120,8 @@ void Server::run(void) {
 			if (this->events[i].data.fd == this->socket) {
 				this->acceptClient();
 			} else {
-				char buff[BUFFER_SIZE];
-				int readBytes = recv(this->events[i].data.fd, buff, sizeof(buff) - 1, 0);
-
-				if (readBytes < 0) {
-					std::cerr << "read error on fd " << this->events[i].data.fd << ": " << strerror(errno) << std::endl;
-					epoll_ctl(epollFd, EPOLL_CTL_DEL, this->events[i].data.fd, NULL);
-					close(this->events[i].data.fd);
-					this->clientBuffers.erase(this->events[i].data.fd);
-					continue;
-				}
-				if (readBytes == 0) {
-					std::cout << "Client " << this->events[i].data.fd << " disconnected." << std::endl;
-					epoll_ctl(epollFd, EPOLL_CTL_DEL, this->events[i].data.fd, NULL);
-					close(this->events[i].data.fd);
-					clientBuffers.erase(this->events[i].data.fd);
-					continue;
-				}
-
-				buff[readBytes] = '\0';
-				printBuffer(buff, GREEN);
-
-				this->clientBuffers[this->events[i].data.fd] += buff;
-
-				// TODO: I'm not sure messages are only terminated by \n, possibly also terminated by \r
-				size_t pos = this->clientBuffers[this->events[i].data.fd].find("\r\n");
-				while (pos != std::string::npos) {
-					std::string message = this->clientBuffers[this->events[i].data.fd].substr(0, pos);
-
-					std::cout << "Received from client " << this->events[i].data.fd << ": " << message << std::endl;
-					// printBuffer(message, BLUE);
-
-					// TODO: Here we should handle the message received before cleaning it
-
-					// TODO: add tr catch
-					if (std::strncmp(message.c_str(), MSG_CLI_CAP_LS, std::strlen(MSG_CLI_CAP_LS)) == 0) {
-						this->sendMsg(events[i].data.fd, std::string(MSG_SERV_CAP_LS));
-					} else if (std::strncmp(message.c_str(), MSG_CLI_CAP_END, std::strlen(MSG_CLI_CAP_END)) == 0) {
-						this->sendMsg(events[i].data.fd, std::string(MSG_SERV_MOTD));
-					} else if (std::strncmp(message.c_str(), MSG_CLI_CAP_REQ, std::strlen(MSG_CLI_CAP_REQ)) == 0) {
-						this->sendMsg(events[i].data.fd, std::string(MSG_SERV_CAP_ACK));
-					} else if (std::strncmp(message.c_str(), MSG_CLI_PING, std::strlen(MSG_CLI_PING)) == 0) {
-						std::string token = message.substr(std::strlen(MSG_CLI_PING));
-						std::cout << "Token: `" << token << "`" << std::endl;
-
-						const std::string irc = "[Internet Relay Chat] ";
-						std::string pongMsg = MSG_SERV_PONG + irc + token + "\r\n";
-						this->sendMsg(events[i].data.fd, pongMsg);
-					} else if (std::strncmp(message.c_str(), MSG_CLI_PASS, std::strlen(MSG_CLI_PASS)) == 0) {
-						std::string receivedPass = message.substr(std::strlen(MSG_CLI_PASS));
-
-						if (receivedPass != this->password) {
-							std::string errorMsg = "464 * :Password incorrect\r\n";
-							send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
-							epoll_ctl(epollFd, EPOLL_CTL_DEL, events[i].data.fd, NULL);
-							close(events[i].data.fd);
-							this->clientBuffers.erase(events[i].data.fd);
-							continue;
-						}
-
-						std::cout << "Client " << events[i].data.fd << " authenticated successfully." << std::endl;
-						// Now, wait for NICK and USER commands from the client
-					}
-					this->clientBuffers[events[i].data.fd].erase(0, pos + 2);
-					pos = this->clientBuffers[events[i].data.fd].find("\r\n");
-				}
+				this->receiveMsg(this->events[i].data.fd);
+				this->processMsg(this->events[i].data.fd);
 			}
 		}
 	}
@@ -199,20 +139,91 @@ void Server::acceptClient() {
 			std::cerr << "epoll_ctl (client) error: " << strerror(errno) << std::endl;
 			close(clientSocket);
 		}
+
+		this->users[clientSocket] = new User(clientSocket) ;
 	}
 
 	if (clientSocket == -1 && (errno != EAGAIN && errno != EWOULDBLOCK)) {
 		std::cerr << "accept error: " << strerror(errno) << std::endl;
 		return;
 	}
-
-	this->users[clientSocket] = new User(clientSocket) ;
 }
 
-// TODO: Add throw
-// TODO ? maybe sendMsg should take care of adding "\r\n" to the msg, so that it prevents repetitions in other places of the code
-void	Server::sendMsg(int fd, const std::string &msg) {
-	printBuffer( "[SRV->CLI] " + msg, BLUE);
+// TODO: Add throw and disconnect client if necessary
+void	Server::receiveMsg(int fd) {
+	char buff[BUFFER_SIZE];
+	int readBytes = recv(fd, buff, sizeof(buff) - 1, 0);
+
+	if (readBytes < 0) {
+		std::cerr << "read error on fd " << fd << ": " << strerror(errno) << std::endl;
+		epoll_ctl(this->epollFd, EPOLL_CTL_DEL, fd, NULL);
+		close(fd);
+		this->clientBuffers.erase(fd);
+		// continue;
+	}
+	if (readBytes == 0) {
+		std::cout << "Client " << fd << " disconnected." << std::endl;
+		epoll_ctl(this->epollFd, EPOLL_CTL_DEL, fd, NULL);
+		close(fd);
+		clientBuffers.erase(fd);
+		// continue;
+	}
+
+	buff[readBytes] = '\0';
+	std::cout << GRAY << "[CLI[" << fd << "]->SRV/RAW] " << debugShowInvisibleChar(buff) << "\e[0m" << std::endl;
+	this->clientBuffers[fd] += buff;
+}
+
+void	Server::processMsg(int fd) {
+	size_t pos = this->clientBuffers[fd].find("\r\n");
+	while (pos != std::string::npos) {
+		std::string message = this->clientBuffers[fd].substr(0, pos);
+		std::cout << GREEN << "[CLI[" << fd << "]->SRV] " << debugShowInvisibleChar(message) << "\e[0m" << std::endl;
+
+		// TODO: Here we should handle the message received before cleaning it
+
+		// TODO: add tr catch
+
+		const User *user = this->getUserByFd(fd) ;
+		if (!user)
+			continue ;
+
+		if (message.compare(0, std::strlen(MSG_CLI_CAP_LS), MSG_CLI_CAP_LS) == 0) {
+			this->MSG_CAP_LS(user) ;
+		} else if (message.compare(0, std::strlen(MSG_CLI_CAP_REQ), MSG_CLI_CAP_REQ) == 0) {
+			this->MSG_CAP_ACK(user, "multi-prefix") ; // TODO: Refactor for better implementation
+		} else if (message.compare(0, std::strlen(MSG_CLI_CAP_END), MSG_CLI_CAP_END) == 0) {
+			this->RPL_WELCOME(this->getUserByFd(fd));
+		} else if (std::strncmp(message.c_str(), MSG_CLI_PING, std::strlen(MSG_CLI_PING)) == 0) {
+			this->MSG_PONG(user, message.substr(std::strlen(MSG_CLI_PING))) ;
+		} else if (std::strncmp(message.c_str(), MSG_CLI_PASS, std::strlen(MSG_CLI_PASS)) == 0) {
+			// TODO: Switch to MSG_PASS or something like that like other message
+			std::string receivedPass = message.substr(std::strlen(MSG_CLI_PASS));
+
+			if (receivedPass != this->password) {
+				std::string errorMsg = "464 * :Password incorrect\r\n";
+				send(fd, errorMsg.c_str(), errorMsg.size(), 0);
+				epoll_ctl(epollFd, EPOLL_CTL_DEL, fd, NULL);
+				close(fd);
+				this->clientBuffers.erase(fd);
+				continue;
+			}
+
+			std::cout << LIGHT_GREEN << "[DBUG|CLI[" << fd << "]] Client " << fd << " authenticated successfully." << "\e[0m" << std::endl;
+		}
+		this->clientBuffers[fd].erase(0, pos + 2);
+		pos = this->clientBuffers[fd].find("\r\n");
+	}
+}
+
+// TODO: Add throw and disconnect client if necessary
+void	Server::sendMsg(int fd, std::string msg) const {
+	if (msg.empty())
+		return ;
+
+	msg += "\r\n" ;
+
+	std::cout << BLUE << "[SRV->CLI[" << fd << "]] " << debugShowInvisibleChar(msg) << "\e[0m" << std::endl;
 	if (send(fd, msg.c_str(), msg.size(), 0) < 0) {
 		std::cerr << "send error: " << strerror(errno) << std::endl;
 		epoll_ctl(this->epollFd, EPOLL_CTL_DEL, fd, NULL);
