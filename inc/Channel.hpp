@@ -38,7 +38,7 @@ class Channel {
 	// const Server &server
 	// server(server),
 	// , topic_restrict(false)
-		Channel(const std::string &name) : name(name), max_users(-1), invite_only(false) {} ;
+		Channel(const std::string &name) ;
 
 		const std::string						&getName()			const	{ return this->name ; } ;
 		const std::string						&getPassword()		const	{ return this->password ; } ;

@@ -3,6 +3,18 @@
 #include "Channel.hpp"
 
 
+/* Constructor */
+
+Channel::Channel(const std::string &name) : name(name) {
+	this->password = "" ;
+	this->topic = "" ;
+	this->topic_change.first = NULL ;
+	this->topic_change.second = std::time(NULL) ;
+	this->max_users = -1 ;
+	this->invite_only = false ;
+}
+
+
 /* Get */
 
 std::string Channel::getUsers() const {
