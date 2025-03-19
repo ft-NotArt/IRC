@@ -3,9 +3,55 @@
 #include "Channel.hpp"
 
 
+/* Get */
+
+std::string Channel::getUsers() const {
+	std::string res ;
+	for (std::set<const User *>::iterator it = this->users.begin(); it != this->users.end() ; it++) {
+		try {
+			if (this->perms.at(*it) & OPERATOR)
+				res += '@' ;
+			res += (*it)->getNickname() + ' ' ;
+		} catch(const std::exception& e) {
+			continue ;
+		}
+	}
+
+	return res ;
+}
+
+
 /* Methods */
 
-void Channel::addUser(const User *user, uint8_t perms) {
+void Channel::join(const User *user, const std::string &password) {
+
+	// TODO: Which order to handle those checks ?
+
+	if (this->password != "" && password != this->password) {
+		; // throw wrong pswd err
+	}
+
+	if (this->max_users != -1 && (int) this->users.size() == this->max_users) {
+		; // throw too many users err
+	}
+
+	if (this->invite_only) {
+		try {
+			if (!(this->perms.at(user) & INVITED)) // TODO: In current state of the code, this would probably end up throwing this error on client already in channel trying to join it | What about those mf ?
+				; // throw not invited err
+		} catch(const std::exception& e) {
+			; // throw not invited err
+		}
+	}
+
 	this->users.insert(user) ;
-	this->perms[user] = perms ;
+	this->perms[user] = NORMAL ;
+
+
+	// TODO: send JOIN msg
+
+	// TODO: send RPL_TOPIC and RPL_TOPICWHOTIME
+
+	// TODO: send RPL_NAMREPLY and RPL_ENDOFNAMES (NAMES cmd)
+
 }

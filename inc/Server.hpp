@@ -1,7 +1,10 @@
 #pragma once
 
-#include "User.hpp"
 #include "Channel.hpp"
+#include "User.hpp"
+
+class Channel ;
+class User ;
 
 #include <string>
 #include <map>
