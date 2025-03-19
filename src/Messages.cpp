@@ -5,19 +5,28 @@
 
 /* Messages */
 
-void	Server::MSG_INVITE(const User *client, const User *invited, const Channel &channel) {
+void	Server::MSG_CAP_LS(const User *client) {
 	std::string msg(":") ;
 
 	msg += client->getNickname() ;
-
-	msg += " INVITE " ;
-
-	msg += invited->getNickname() ;
 	msg += " " ;
 
-	msg += channel.getName() ;
+	msg += "CAP * LS :multi-prefix" ;
 
-	this->sendMsg(invited->getFd(), msg) ;
+	this->sendMsg(client->getFd(), msg) ;
+}
+
+void	Server::MSG_CAP_ACK(const User *client, const std::string &request_capa) {
+	std::string msg(":") ;
+
+	msg += client->getNickname() ;
+	msg += " " ;
+
+	msg += "CAP * ACK " ;
+
+	msg += request_capa ;
+
+	this->sendMsg(client->getFd(), msg) ;
 }
 
 void	Server::MSG_PONG(const User *client, const std::string &token) {
@@ -32,4 +41,19 @@ void	Server::MSG_PONG(const User *client, const std::string &token) {
 	msg += token ;
 
 	this->sendMsg(client->getFd(), msg) ;
+}
+
+void	Server::MSG_INVITE(const User *client, const User *invited, const Channel &channel) {
+	std::string msg(":") ;
+
+	msg += client->getNickname() ;
+
+	msg += " INVITE " ;
+
+	msg += invited->getNickname() ;
+	msg += " " ;
+
+	msg += channel.getName() ;
+
+	this->sendMsg(invited->getFd(), msg) ;
 }
