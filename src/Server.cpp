@@ -219,3 +219,15 @@ void	Server::sendMsg(int fd, const std::string &msg) {
 		return;
 	}
 }
+
+
+// Clem j'te laisse ranger ca ou tu veux
+/* Get */
+
+const User *Server::getUserByFd(int fd) const {
+	try {
+		return this->users.at(fd) ;
+	} catch(const std::exception& e) {
+		return NULL ;
+	}
+}
