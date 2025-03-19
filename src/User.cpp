@@ -5,4 +5,4 @@
 
 /* Constructor */
 
-User::User(int fd, const std::string &nickname, const std::string &username) : fd(fd), nickname(nickname), username(username) {}
+User::User(int fd) : fd(fd) {}

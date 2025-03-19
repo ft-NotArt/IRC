@@ -55,5 +55,6 @@ class Server {
 		void	start(void) ;
 		void 	run(void) ;
 
-		void	addUser(int fd, const User *user) ;
+		void	acceptClient() ;
+		void 	sendMsg(int fd, const std::string &buffer) ;
 };
