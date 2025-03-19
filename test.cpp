@@ -1,6 +1,6 @@
 #define MAX_CONNECTIONS 5
 #define BUFFER_SIZE 1024
-#define PORT 5001
+#define PORT 5000
 #define TIMEOUT -1
 #define MAX_EVENTS 10
 

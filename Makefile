@@ -14,14 +14,14 @@ NAME		=	IRC
 
 MAKEFLAGS	=	-s
 CXX			=	c++
-CXXFLAGS	=	-Wall -Wextra -Werror -g -std=c++98
+CXXFLAGS	=	-Wall -Wextra -Werror -g -std=c++98 -Iinc
 
 # FILES
 
-FILES		=	main
+FILES		=	main Server Channel User
 
 SRC			=	$(addsuffix .cpp, $(FILES))
-OBJ			=	$(addsuffix .o, $(FILES))
+OBJ			=	$(addsuffix .o, $(addprefix src/, $(FILES)))
 
 # RULES
 

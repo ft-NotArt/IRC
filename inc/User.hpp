@@ -12,7 +12,7 @@ class User {
 		User(int fd, const std::string &nickname, const std::string &username) ;
 
 
-		const int			 getFd()		const	{ return this->fd ; } ;
+		int			 		getFd()			const	{ return this->fd ; } ;
 		const std::string	&getNickname()	const	{ return this->nickname ; } ;
 		const std::string	&getUsername()	const	{ return this->username ; } ;
 
