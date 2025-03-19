@@ -80,6 +80,22 @@ void	Server::RPL_TOPICWHOTIME(const User *client, const Channel &channel) {
 	this->sendMsg(client->getFd(), rpl) ;
 }
 
+void	Server::RPL_INVITING(const User *client, const User *invited, const Channel &channel) {
+	std::string rpl(":") ;
+
+	rpl += SERVER_NAME ;
+	rpl += " 341 " ;
+	rpl += client->getNickname() ;
+
+	rpl += " " ;
+	rpl += invited->getNickname() ;
+
+	rpl += " " ;
+	rpl += channel.getName() ;
+
+	this->sendMsg(client->getFd(), rpl) ;
+}
+
 // We put '=' as the symbol for the type of the channel as it's the only type of channel we have
 void	Server::RPL_NAMREPLY(const User *client, const Channel &channel) {
 	std::string rpl(":") ;
