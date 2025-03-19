@@ -9,5 +9,9 @@ int main(int argc, char *argv[]) {
 	}
 
 	Server server(argv[1], std::atoi(argv[2]));
+
+	server.start();
+	server.run();
+
 	return EXIT_SUCCESS;
 }
