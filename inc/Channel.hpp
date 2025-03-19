@@ -34,7 +34,7 @@ class Channel {
 		// bool							topic_restrict ;
 
 	public:
-	// TODO: There should be parsing on channel name, idk at which point of the code though
+	// TODO: There should be parsing on channel name (ex. starting with #), idk at which point of the code though
 
 	// , topic_restrict(false)
 		Channel(const std::string &name, Server & const server) ;

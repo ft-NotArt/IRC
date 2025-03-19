@@ -69,4 +69,6 @@ class Server {
 		void	RPL_INVITING(const User *client, const User *invited, const Channel &channel) ;
 		void	RPL_NAMREPLY(const User *client, const Channel &channel) ;
 		void	RPL_ENDOFNAMES(const User *client, const Channel &channel) ;
+
+		void	MSG_INVITE(const User *client, const User *invited, const Channel &channel) ;
 };
