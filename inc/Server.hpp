@@ -66,4 +66,6 @@ class Server {
 		void	RPL_NOTOPIC(const User *client, const Channel &channel) ;
 		void	RPL_TOPIC(const User *client, const Channel &channel) ;
 		void	RPL_TOPICWHOTIME(const User *client, const Channel &channel) ;
+		void	RPL_NAMREPLY(const User *client, const Channel &channel) ;
+		void	RPL_ENDOFNAMES(const User *client, const Channel &channel) ;
 };

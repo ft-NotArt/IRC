@@ -10,8 +10,10 @@
 // TODO: put every this->sendMsg in try catch when sendMsg will throw
 
 void	Server::RPL_WELCOME(const User *client) {
-	std::string rpl("001 ") ;
+	std::string rpl(":") ;
 
+	rpl += SERVER_NAME ;
+	rpl += " 001 " ;
 	rpl += client->getNickname() ;
 
 	rpl += " :Welcome to the " ;
@@ -24,8 +26,10 @@ void	Server::RPL_WELCOME(const User *client) {
 }
 
 void	Server::RPL_NOTOPIC(const User *client, const Channel &channel) {
-	std::string rpl("331 ") ;
+	std::string rpl(":") ;
 
+	rpl += SERVER_NAME ;
+	rpl += " 331 " ;
 	rpl += client->getNickname() ;
 
 	rpl += " " ;
@@ -38,8 +42,10 @@ void	Server::RPL_NOTOPIC(const User *client, const Channel &channel) {
 
 // Use this reply only if a topic is set, otherwise, use RPL_NOTOPIC
 void	Server::RPL_TOPIC(const User *client, const Channel &channel) {
-	std::string rpl("332 ") ;
+	std::string rpl(":") ;
 
+	rpl += SERVER_NAME ;
+	rpl += " 332 " ;
 	rpl += client->getNickname() ;
 
 	rpl += " " ;
@@ -53,13 +59,14 @@ void	Server::RPL_TOPIC(const User *client, const Channel &channel) {
 
 // Use this reply only if a topic is set, otherwise, use RPL_NOTOPIC
 void	Server::RPL_TOPICWHOTIME(const User *client, const Channel &channel) {
-	std::string rpl("333 ") ;
+	std::string rpl(":") ;
 
+	rpl += SERVER_NAME ;
+	rpl += " 333 " ;
 	rpl += client->getNickname() ;
 
 	rpl += " " ;
 	rpl += channel.getName() ;
-
 
 	std::pair<const User *, time_t>	topic_change = channel.getTopicChange();
 	if (topic_change.first) {
@@ -69,6 +76,38 @@ void	Server::RPL_TOPICWHOTIME(const User *client, const Channel &channel) {
 		rpl += " " ;
 		rpl += topic_change.second ;
 	}
+
+	this->sendMsg(client->getFd(), rpl) ;
+}
+
+// We put '=' as the symbol for the type of the channel as it's the only type of channel we have
+void	Server::RPL_NAMREPLY(const User *client, const Channel &channel) {
+	std::string rpl(":") ;
+
+	rpl += SERVER_NAME ;
+	rpl += " 353 " ;
+	rpl += client->getNickname() ;
+
+	rpl += " = " ;
+	rpl += channel.getName() ;
+	rpl += " :" ;
+
+	rpl += channel.getUsers() ;
+
+	this->sendMsg(client->getFd(), rpl) ;
+}
+
+void	Server::RPL_ENDOFNAMES(const User *client, const Channel &channel) {
+	std::string rpl(":") ;
+
+	rpl += SERVER_NAME ;
+	rpl += " 366 " ;
+	rpl += client->getNickname() ;
+
+	rpl += " " ;
+	rpl += channel.getName() ;
+
+	rpl += " :End of /NAMES list" ;
 
 	this->sendMsg(client->getFd(), rpl) ;
 }

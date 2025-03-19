@@ -68,6 +68,7 @@ void Channel::join(const User *user, const std::string &password) {
 	} else
 		this->server.RPL_NOTOPIC(user, *this) ;
 
-	// TODO: send RPL_NAMREPLY and RPL_ENDOFNAMES (NAMES cmd)
+	this->server.RPL_NAMREPLY(user, *this) ;
+	this->server.RPL_ENDOFNAMES(user, *this) ;
 
 }
