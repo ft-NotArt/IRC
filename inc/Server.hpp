@@ -11,7 +11,7 @@ class User ;
 #include <set>
 #include <sys/epoll.h>
 
-#define SERVER_NAME		"Internet Relay Chat"
+#define SERVER_NAME		"Internet_Relay_Chat"
 
 #define MAX_CONNECTIONS 5
 #define MAX_EVENTS 10

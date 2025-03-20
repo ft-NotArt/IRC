@@ -1,6 +1,3 @@
-// This whole file could also be a part of Server.cpp, we should see how we manage that. However, it tends to be big...
-// TODO: Idk if numeric values have to be at the start of those replies
-
 /* Includes */
 
 #include "Server.hpp"
@@ -10,8 +7,10 @@
 // TODO: put every this->sendMsg in try catch when sendMsg will throw
 
 void	Server::RPL_WELCOME(const User *client) const {
-	std::string rpl("001 ") ;
+	std::string rpl(":") ;
 
+	rpl += SERVER_NAME ;
+	rpl += " 001 " ;
 	rpl += client->getNickname() ;
 
 	rpl += " :Welcome to the " ;
@@ -21,21 +20,6 @@ void	Server::RPL_WELCOME(const User *client) const {
 	rpl += client->getNickname() ;
 
 	this->sendMsg(client->getFd(), rpl) ;
-
-	// FIXME: This version doesn't work, above version does
-	// std::string rpl(":") ;
-
-	// rpl += SERVER_NAME ;
-	// rpl += " 001 " ;
-	// rpl += client->getNickname() ;
-
-	// rpl += " :Welcome to the " ;
-	// rpl += SERVER_NAME ;
-	// rpl += " Network, " ;
-
-	// rpl += client->getNickname() ;
-
-	// this->sendMsg(client->getFd(), rpl) ;
 }
 
 void	Server::RPL_NOTOPIC(const User *client, const Channel &channel) const {
