@@ -184,19 +184,29 @@ void	Server::processMsg(int fd) {
 
 		// TODO: add tr catch
 
-		const User *user = this->getUserByFd(fd) ;
+		User *user = this->getUserByFd(fd) ;
 		if (!user)
 			continue ;
 
 		if (message.compare(0, std::strlen(MSG_CLI_CAP_LS), MSG_CLI_CAP_LS) == 0) {
 			this->MSG_CAP_LS(user) ;
-		} else if (message.compare(0, std::strlen(MSG_CLI_CAP_REQ), MSG_CLI_CAP_REQ) == 0) {
+		}
+		else if (message.compare(0, std::strlen(MSG_CLI_CAP_REQ), MSG_CLI_CAP_REQ) == 0) {
 			this->MSG_CAP_ACK(user, "multi-prefix") ; // TODO: Refactor for better implementation
-		} else if (message.compare(0, std::strlen(MSG_CLI_CAP_END), MSG_CLI_CAP_END) == 0) {
+		}
+		else if (message.compare(0, std::strlen(MSG_CLI_CAP_END), MSG_CLI_CAP_END) == 0) {
 			this->RPL_WELCOME(this->getUserByFd(fd));
-		} else if (std::strncmp(message.c_str(), MSG_CLI_PING, std::strlen(MSG_CLI_PING)) == 0) {
+		}
+		else if (message.compare(0, std::strlen(MSG_CLI_NICK), MSG_CLI_NICK) == 0) {
+			user->setNickname(message.substr(std::strlen(MSG_CLI_NICK)));
+		}
+		else if (message.compare(0, std::strlen(MSG_CLI_USER), MSG_CLI_USER) == 0) {
+			user->setUsername(message.substr(std::strlen(MSG_CLI_USER), message.find(' ', std::strlen("USER "))));
+		}
+		else if (std::strncmp(message.c_str(), MSG_CLI_PING, std::strlen(MSG_CLI_PING)) == 0) {
 			this->MSG_PONG(user, message.substr(std::strlen(MSG_CLI_PING))) ;
-		} else if (std::strncmp(message.c_str(), MSG_CLI_PASS, std::strlen(MSG_CLI_PASS)) == 0) {
+		}
+		else if (std::strncmp(message.c_str(), MSG_CLI_PASS, std::strlen(MSG_CLI_PASS)) == 0) {
 			// TODO: Switch to MSG_PASS or something like that like other message
 			std::string receivedPass = message.substr(std::strlen(MSG_CLI_PASS));
 
@@ -236,7 +246,7 @@ void	Server::sendMsg(int fd, std::string msg) const {
 // Clem j'te laisse ranger ca ou tu veux
 /* Get */
 
-const User *Server::getUserByFd(int fd) const {
+User *Server::getUserByFd(int fd) const {
 	try {
 		return this->users.at(fd) ;
 	} catch(const std::exception& e) {

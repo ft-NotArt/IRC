@@ -22,6 +22,8 @@ class User ;
 #define MSG_CLI_PASS		"PASS "
 #define MSG_CLI_CAP_REQ		"CAP REQ :multi-prefix"
 #define MSG_CLI_PING		"PING "
+#define MSG_CLI_NICK		"NICK "
+#define MSG_CLI_USER		"USER "
 
 class Server {
 	private:
@@ -32,7 +34,7 @@ class Server {
 		epoll_event					event, events[MAX_EVENTS] ;
 		std::map<int, std::string>	clientBuffers ;
 		std::set<Channel>			channels ; // Shouldn't this be a std::map<std::string name, Channel> in order to know what channel already exist ?
-		std::map<int, const User *>	users ;
+		std::map<int, User *>		users ;
 
 	public:
 		Server(const std::string &password, const int port) ;
@@ -42,9 +44,7 @@ class Server {
 		int			 				getPort()				const	{ return this->port ; } ;
 		int			 				getSocket()				const	{ return this->socket ; } ;
 		int			 				getEpollFd()			const	{ return this->epollFd ; } ;
-		std::set<Channel>			getChannels()			const	{ return this->channels ; } ;
-		std::map<int, const User *>	getUsers()				const	{ return this->users ; } ;
-		const User					*getUserByFd(int fd)	const	;
+		User						*getUserByFd(int fd)	const	;
 
 		void	createSocket(void) ;
 		void	createEpoll(void) ;
