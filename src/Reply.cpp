@@ -160,3 +160,17 @@ void	Server::RPL_CHANNELMODEIS(const User *client, const Channel &channel, const
 
 	this->sendMsg(client->getFd(), rpl);
 }
+
+// This is replied when user is promoted to Operator
+void	Server::RPL_YOUREOPER(const User *client) const
+{
+	std::string rpl(":") ;
+
+	rpl += SERVER_NAME ;
+	rpl += " 324 " ;
+	rpl += client->getNickname() ;
+
+	rpl += " :You are now an IRC operator" ;
+
+	this->sendMsg(client->getFd(), rpl);
+}

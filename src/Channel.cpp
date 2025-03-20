@@ -52,12 +52,13 @@ void Channel::join(const User *user, const std::string &password) {
 	if (this->invite_only) {
 		try {
 			if (!(this->perms.at(user) & INVITED)) // TODO: In current state of the code, this would probably end up throwing this error on client already in channel trying to join it | What about those mf ?
-				; // throw not invited err | or return ?
+				{}; // throw not invited err | or return ?
 		} catch(const std::exception& e) {
 			; // throw not invited err
 		}
 	}
 
+	// TODO PUT BACK THIS CODE WITH FIX (Blocked Compilation)
 	this->users.insert(user) ;
 	try {
 		this->perms.at(user) &= !INVITED ;

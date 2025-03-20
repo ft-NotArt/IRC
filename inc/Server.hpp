@@ -60,18 +60,14 @@ class Server {
 
 		// Connection & Auth
 		void	RPL_WELCOME(const User *client)																						const ;
-		// Join Command
 		void	RPL_NAMREPLY(const User *client, const Channel &channel)															const ;
 		void	RPL_ENDOFNAMES(const User *client, const Channel &channel)															const ;
-		// Invite Command
 		void	RPL_INVITING(const User *client, const User *invited, const Channel &channel)										const ;
-		// Topic Command
 		void	RPL_TOPIC(const User *client, const Channel &channel)																const ;
 		void	RPL_NOTOPIC(const User *client, const Channel &channel)																const ;
 		void	RPL_TOPICWHOTIME(const User *client, const Channel &channel)														const ;
-		// Mode Command
 		void	RPL_CHANNELMODEIS(const User *client, const Channel &channel, const std::string modes, const std::string params) 	const ;
-
+		void	RPL_YOUREOPER(const User *client)																					const ;
 
 		void	MSG_CAP_LS(const User *client) ;
 		void	MSG_CAP_ACK(const User *client, const std::string &request_capa) ;
