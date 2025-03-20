@@ -33,7 +33,8 @@ void	Server::MSG_PONG(const User *client, const std::string &token) {
 	std::string msg(":") ;
 
 	msg += client->getNickname() ;
-	msg += " " ;
+
+	msg += " PONG " ;
 
 	msg += SERVER_NAME ;
 	msg += " " ;
