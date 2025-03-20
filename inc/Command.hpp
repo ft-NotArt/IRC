@@ -8,8 +8,6 @@
 class Command{
 	public:
 		static void		QUIT(const User *client, std::vector<std::string> args);
-		static void		PING(const User *client, std::vector<std::string> args);
-		static void		PONG(const User *client, std::vector<std::string> args);
 		static void		PRIVMSG(const User *client, std::vector<std::string> args);
 		static void		INVITE(const User *client, std::vector<std::string> args);
 		static void		KICK(const User *client, std::vector<std::string> args);
