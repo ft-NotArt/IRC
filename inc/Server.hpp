@@ -7,6 +7,7 @@ class Channel ;
 class User ;
 
 #include <string>
+#include <vector>
 #include <map>
 #include <set>
 #include <sys/epoll.h>
@@ -57,11 +58,12 @@ class Server {
 		void	processMsg(int fd) ;
 		void 	sendMsg(int fd, std::string msg) const ;
 
-		// THIS DOES WORKS ?? If yes and you guys are agree maybe this is more optimized :D
-		#define RPL_WELCOME_TEST(client)							SERVER_NAME + " 001 " + client + " :Welcome " + client + " to the ft_irc network"
-		#define RPL_NAMREPLY_TEST(client, channel, usersList)		SERVER_NAME + " 353 " + client + " = " + channel + " :" usersList
-		#define RPL_ENDOFNAMES_TEST(client, channel)				SERVER_NAME + " 366 " + client + " " + channel + " :End of /NAMES list"
-		#define RPL_QUIT_TEST(client, message)						":" + client + " Quit: " + message
+		void	QUIT(const User *client, std::vector<std::string> args);
+		// void		PRIVMSG(const User *client, std::vector<std::string> args);
+		// void		INVITE(const User *client, std::vector<std::string> args);
+		// void		KICK(const User *client, std::vector<std::string> args);
+		// void		MODE(const User *client, std::vector<std::string> args);
+		// void		TOPIC(const User *client, std::vector<std::string> args);
 
 		void	RPL_WELCOME(const User *client)																						const ;
 		void	RPL_NAMREPLY(const User *client, const Channel &channel)															const ;
@@ -77,4 +79,4 @@ class Server {
 		void	MSG_CAP_ACK(const User *client, const std::string &request_capa) ;
 		void	MSG_PONG(const User *client, const std::string &token) ;
 		void	MSG_INVITE(const User *client, const User *invited, const Channel &channel) ;
-};
+} ;
