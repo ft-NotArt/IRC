@@ -140,3 +140,23 @@ void	Server::RPL_ENDOFNAMES(const User *client, const Channel &channel) const {
 
 	this->sendMsg(client->getFd(), rpl) ;
 }
+
+// This is commonly used when using MODE command to retrieve all available modes of the channel (the mode function can take parameter for example MODE #<channel_name>)
+void	Server::RPL_CHANNELMODEIS(const User *client, const Channel &channel, const std::string modes, const std::string modesArgs) const
+{
+	std::string rpl(":") ;
+
+	rpl += SERVER_NAME ;
+	rpl += " 324 " ;
+	rpl += client->getNickname() ;
+
+	rpl += " " ;
+	rpl += channel.getName() ;
+
+	rpl += " " ;
+	rpl += modes ;
+	rpl += " " ;
+	rpl += modesArgs ;
+
+	this->sendMsg(client->getFd(), rpl);
+}

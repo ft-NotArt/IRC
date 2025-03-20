@@ -58,14 +58,19 @@ class Server {
 		void 	sendMsg(int fd, std::string msg) const ;
 
 
-
-		void	RPL_WELCOME(const User *client)													const ;
-		void	RPL_NOTOPIC(const User *client, const Channel &channel)							const ;
-		void	RPL_TOPIC(const User *client, const Channel &channel)							const ;
-		void	RPL_TOPICWHOTIME(const User *client, const Channel &channel)					const ;
-		void	RPL_INVITING(const User *client, const User *invited, const Channel &channel)	const ;
-		void	RPL_NAMREPLY(const User *client, const Channel &channel)						const ;
-		void	RPL_ENDOFNAMES(const User *client, const Channel &channel)						const ;
+		// Connection & Auth
+		void	RPL_WELCOME(const User *client)																						const ;
+		// Join Command
+		void	RPL_NAMREPLY(const User *client, const Channel &channel)															const ;
+		void	RPL_ENDOFNAMES(const User *client, const Channel &channel)															const ;
+		// Invite Command
+		void	RPL_INVITING(const User *client, const User *invited, const Channel &channel)										const ;
+		// Topic Command
+		void	RPL_TOPIC(const User *client, const Channel &channel)																const ;
+		void	RPL_NOTOPIC(const User *client, const Channel &channel)																const ;
+		void	RPL_TOPICWHOTIME(const User *client, const Channel &channel)														const ;
+		// Mode Command
+		void	RPL_CHANNELMODEIS(const User *client, const Channel &channel, const std::string modes, const std::string params) 	const ;
 
 
 		void	MSG_CAP_LS(const User *client) ;
