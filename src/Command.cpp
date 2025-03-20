@@ -8,5 +8,5 @@ void Command::QUIT(const User *client, std::vector<std::string> args) {
 	if (!args.empty())
 		reason += args.at(0) ;
 
-	// TODO add sendMsg to all users in the same channel
+	// TODO quit every channels
 }

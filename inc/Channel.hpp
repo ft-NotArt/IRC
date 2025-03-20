@@ -51,4 +51,6 @@ class Channel {
 		void	setMaxUsers(int max_users)					{ this->max_users = max_users ; } ;
 
 		void	join(const User *user, const std::string &password) ;
+
+		// TODO: Method LEAVE
 } ;

@@ -37,25 +37,23 @@ std::string Channel::getUsers() const {
 
 void Channel::join(const User *user, const std::string &password) {
 
-	// TODO: Which order to handle those checks ?
+	// TODO: Possibly checking for banned
 
-	// Possibly checking for banned
-
-	if (this->password != "" && password != this->password) {
-		; // throw wrong pswd err
+	if (this->invite_only) {
+		try {
+			if (!(this->perms.at(user) & INVITED))
+				; // return
+		} catch(const std::exception& e) {
+			; // throw not invited err
+		}
 	}
 
 	if (this->max_users != -1 && (int) this->users.size() == this->max_users) {
 		; // throw too many users err
 	}
 
-	if (this->invite_only) {
-		try {
-			if (!(this->perms.at(user) & INVITED)) // TODO: In current state of the code, this would probably end up throwing this error on client already in channel trying to join it | What about those mf ?
-				{}; // throw not invited err | or return ?
-		} catch(const std::exception& e) {
-			; // throw not invited err
-		}
+	if (this->password != "" && password != this->password) {
+		; // throw wrong pswd err
 	}
 
 	// TODO PUT BACK THIS CODE WITH FIX (Blocked Compilation)
