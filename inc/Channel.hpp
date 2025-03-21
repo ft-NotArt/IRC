@@ -31,7 +31,7 @@ class Channel {
 		std::map<const User *, uint8_t>	perms ;
 		int								max_users ;
 		bool							invite_only ;
-		// bool							topic_restrict ;
+		bool							topic_restricted ;
 
 	public:
 	// TODO: There should be parsing on channel name (ex. starting with #), idk at which point of the code though
@@ -39,12 +39,13 @@ class Channel {
 	// , topic_restrict(false)
 		Channel(const std::string &name, const Server &server) ;
 
-		const std::string						&getName()			const	{ return this->name ; } ;
-		const std::string						&getPassword()		const	{ return this->password ; } ;
-		const std::string						&getTopic()			const	{ return this->topic ; } ;
-		const std::pair<const User *, time_t>	&getTopicChange()	const	{ return this->topic_change ; } ;
-		int										getMaxUsers()		const	{ return this->max_users ; } ;
-		std::string								getUsers()			const	;
+		const std::string						&getName()				const	{ return this->name ; } ;
+		const std::string						&getPassword()			const	{ return this->password ; } ;
+		const std::string						&getTopic()				const	{ return this->topic ; } ;
+		const std::pair<const User *, time_t>	&getTopicChange()		const	{ return this->topic_change ; } ;
+		int										getMaxUsers()			const	{ return this->max_users ; } ;
+		bool									getTopicRestriction()	const 	{ return this->topic_restricted ; } ;
+		std::string								getUsers()				const	;
 
 		void	setPassword(const std::string &password)	{ this->password = password ; } ;
 		void	setTopic(const std::string &topic)			{ this->topic = topic ; } ;

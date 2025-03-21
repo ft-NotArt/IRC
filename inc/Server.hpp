@@ -34,18 +34,19 @@ class Server {
 		int							epollFd ;
 		epoll_event					event, events[MAX_EVENTS] ;
 		std::map<int, std::string>	clientBuffers ;
-		std::map<std::string, Channel>	channels ; // Shouldn't this be a std::map<std::string name, Channel> in order to know what channel already exist ?
+		std::map<std::string, Channel>	channels ;
 		std::map<int, User *>		users ;
 
 	public:
 		Server(const std::string &password, const int port) ;
 		~Server(void) ;
 
-		const std::string			&getPassword()			const	{ return this->password ; } ;
-		int			 				getPort()				const	{ return this->port ; } ;
-		int			 				getSocket()				const	{ return this->socket ; } ;
-		int			 				getEpollFd()			const	{ return this->epollFd ; } ;
-		User						*getUserByFd(int fd)	const	;
+		const std::string					&getPassword()								const	{ return this->password ; } ;
+		int			 						getPort()									const	{ return this->port ; } ;
+		int			 						getSocket()									const	{ return this->socket ; } ;
+		int			 						getEpollFd()								const	{ return this->epollFd ; } ;
+		User								*getUserByFd(int fd)						const	;
+		Channel								*getChannel(const std::string &channelName)			;
 
 		void	createSocket(void) ;
 		void	createEpoll(void) ;
