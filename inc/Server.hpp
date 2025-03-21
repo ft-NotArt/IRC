@@ -34,7 +34,7 @@ class Server {
 		int							epollFd ;
 		epoll_event					event, events[MAX_EVENTS] ;
 		std::map<int, std::string>	clientBuffers ;
-		std::set<Channel>			channels ; // Shouldn't this be a std::map<std::string name, Channel> in order to know what channel already exist ?
+		std::map<std::string, Channel>	channels ; // Shouldn't this be a std::map<std::string name, Channel> in order to know what channel already exist ?
 		std::map<int, User *>		users ;
 
 	public:
@@ -58,12 +58,13 @@ class Server {
 		void	processMsg(int fd) ;
 		void 	sendMsg(int fd, std::string msg) const ;
 
+		// Commands
 		void	QUIT(const User *client, std::vector<std::string> args);
-		// void		PRIVMSG(const User *client, std::vector<std::string> args);
-		// void		INVITE(const User *client, std::vector<std::string> args);
-		// void		KICK(const User *client, std::vector<std::string> args);
-		// void		MODE(const User *client, std::vector<std::string> args);
-		// void		TOPIC(const User *client, std::vector<std::string> args);
+		void	PRIVMSG(const User *client, std::vector<std::string> args);
+		void	INVITE(const User *client, std::vector<std::string> args);
+		void	KICK(const User *client, std::vector<std::string> args);
+		void	MODE(const User *client, std::vector<std::string> args);
+		void	TOPIC(const User *client, std::vector<std::string> args);
 
 		void	RPL_WELCOME(const User *client)																						const ;
 		void	RPL_NAMREPLY(const User *client, const Channel &channel)															const ;

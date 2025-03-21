@@ -36,6 +36,7 @@ std::string Channel::getUsers() const {
 
 /* Methods */
 
+// TODO Find a way to replace exception messages with the appropriated data (this is not easy as we thinked at the beginnind LOLLLLLLLLLLLLL)
 void Channel::join(const User *user, const std::string &password) {
 
 	if (this->perms.at(user) & BANNED)
