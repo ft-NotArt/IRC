@@ -74,3 +74,18 @@ void Server::TOPIC(const User *client, std::vector<std::string> args)
 	// maybe inform all users of channels that TOPIC has been changed
 
 }
+
+void Server::PRIVMSG(const User *client, std::vector<std::string> args)
+{
+	if (args.empty())
+	{
+		throw(IrcException::NeedMoreParams());
+	}
+
+	if (args.size() > 2)
+	{
+		// maybe handle for too many params
+	}
+
+
+}
