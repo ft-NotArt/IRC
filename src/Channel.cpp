@@ -33,7 +33,6 @@ std::string Channel::getUsers() const {
 	return res ;
 }
 
-
 /* Methods */
 
 // TODO Find a way to replace exception messages with the appropriated data (this is not easy as we thinked at the beginnind LOLLLLLLLLLLLLL)

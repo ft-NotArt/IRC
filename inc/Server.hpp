@@ -41,11 +41,12 @@ class Server {
 		Server(const std::string &password, const int port) ;
 		~Server(void) ;
 
-		const std::string			&getPassword()			const	{ return this->password ; } ;
-		int			 				getPort()				const	{ return this->port ; } ;
-		int			 				getSocket()				const	{ return this->socket ; } ;
-		int			 				getEpollFd()			const	{ return this->epollFd ; } ;
-		User						*getUserByFd(int fd)	const	;
+		const std::string					&getPassword()								const	{ return this->password ; } ;
+		int			 						getPort()									const	{ return this->port ; } ;
+		int			 						getSocket()									const	{ return this->socket ; } ;
+		int			 						getEpollFd()								const	{ return this->epollFd ; } ;
+		User								*getUserByFd(int fd)						const	;
+		Channel								*getChannel(const std::string &channelName)			;
 
 		void	createSocket(void) ;
 		void	createEpoll(void) ;
