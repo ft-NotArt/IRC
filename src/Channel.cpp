@@ -1,6 +1,7 @@
 /* Includes */
 
 #include "Channel.hpp"
+#include "Errors.hpp"
 
 
 /* Constructor */
@@ -37,33 +38,34 @@ std::string Channel::getUsers() const {
 
 void Channel::join(const User *user, const std::string &password) {
 
-	// TODO: Possibly checking for banned
+	if (this->perms.at(user) & BANNED)
+	{
+		throw(IrcException::BannedFromChan());
+	}
 
 	if (this->invite_only) {
 		try {
 			if (!(this->perms.at(user) & INVITED))
 				; // return
 		} catch(const std::exception& e) {
-			; // throw not invited err
+			throw(IrcException::InviteOnlyChan());
 		}
 	}
 
 	if (this->max_users != -1 && (int) this->users.size() == this->max_users) {
-		; // throw too many users err
+		throw(IrcException::ChannelIsFull());
 	}
 
 	if (this->password != "" && password != this->password) {
-		; // throw wrong pswd err
+		throw(IrcException::PasswdMismatch());
 	}
 
-	// TODO PUT BACK THIS CODE WITH FIX (Blocked Compilation)
 	this->users.insert(user) ;
 	try {
 		this->perms.at(user) &= !INVITED ;
 	} catch(const std::exception& e) {
 		this->perms[user] = NORMAL ;
 	}
-
 
 	// TODO: send JOIN msg
 
