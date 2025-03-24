@@ -45,8 +45,8 @@ void Channel::join(const User *user, const std::string &password) {
 
 	if (this->invite_only) {
 		try {
-			if (!(this->perms.at(user) & INVITED))
-				; // return
+			// if (!(this->perms.at(user) & INVITED))
+			// 	; // return
 		} catch(const std::exception& e) {
 			throw(IrcException::InviteOnlyChan());
 		}
@@ -62,7 +62,7 @@ void Channel::join(const User *user, const std::string &password) {
 
 	this->users.insert(user) ;
 	try {
-		this->perms.at(user) &= !INVITED ;
+		this->perms.at(user) &= ~INVITED ;
 	} catch(const std::exception& e) {
 		this->perms[user] = NORMAL ;
 	}
