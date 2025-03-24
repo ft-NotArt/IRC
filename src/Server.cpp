@@ -198,6 +198,14 @@ void	Server::processMsg(int fd) {
 			this->RPL_WELCOME(this->getUserByFd(fd));
 		}
 		else if (message.compare(0, std::strlen(MSG_CLI_NICK), MSG_CLI_NICK) == 0) {
+			if (!user->isAuthenticated()) {
+				std::string errorMsg = "464 * :Password incorrect\r\n";
+				send(fd, errorMsg.c_str(), errorMsg.size(), 0);
+				epoll_ctl(epollFd, EPOLL_CTL_DEL, fd, NULL);
+				close(fd);
+				this->clientBuffers.erase(fd);
+				continue;
+			}
 			user->setNickname(message.substr(std::strlen(MSG_CLI_NICK)));
 		}
 		else if (message.compare(0, std::strlen(MSG_CLI_USER), MSG_CLI_USER) == 0) {
@@ -207,7 +215,6 @@ void	Server::processMsg(int fd) {
 			this->MSG_PONG(user, message.substr(std::strlen(MSG_CLI_PING))) ;
 		}
 		else if (std::strncmp(message.c_str(), MSG_CLI_PASS, std::strlen(MSG_CLI_PASS)) == 0) {
-			// TODO: Switch to MSG_PASS or something like that like other message
 			std::string receivedPass = message.substr(std::strlen(MSG_CLI_PASS));
 
 			if (receivedPass != this->password) {
@@ -219,6 +226,7 @@ void	Server::processMsg(int fd) {
 				continue;
 			}
 
+			user->setAuthenticated(true) ;
 			std::cout << LIGHT_GREEN << "[DBUG|CLI[" << fd << "]] Client " << fd << " authenticated successfully." << "\e[0m" << std::endl;
 		}
 		this->clientBuffers[fd].erase(0, pos + 2);
