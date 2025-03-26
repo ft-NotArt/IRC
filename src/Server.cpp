@@ -169,11 +169,11 @@ void	Server::receiveMsg(int fd) {
 	if (readBytes < 0) {
 		std::cerr << "read error on fd " << fd << ": " << strerror(errno) << std::endl;
 		this->closeClient(fd);
-		// return;
+		return;
 	}
 	if (readBytes == 0) {
 		this->closeClient(fd);
-		// return;
+		return;
 	}
 
 	buff[readBytes] = '\0';
@@ -254,17 +254,20 @@ void	Server::processMsg(int fd) {
 			else if (std::strncmp(message.c_str(), MSG_CLI_NICK, std::strlen(MSG_CLI_NICK)) == 0) {
 				// this->NICK(user, message.substr(std::strlen(MSG_CLI_NICK))) ;
 			}
-		} catch (const IrcException::PasswdMismatch &e) {
-			/* DEBUG */ std::cout << LIGHT_RED << "[DBUG|CLI[" << fd << "]] Client " << fd << " failed authentication." << "\e[0m" << std::endl;
-			std::string except(e.what());
-			replaceAll(except, "%client%", user->getNickname()) ;
-			this->sendMsg(fd, except) ;
+		} catch (const std::exception &e) {
+			/* DEBUG */ std::cout << LIGHT_RED << "[DBUG|CLI[" << fd << "]] Exception caught: " << e.what() << "\e[0m" << std::endl;
+			if (e.what()[0] == ':') {
+				std::string except(e.what());
+				replaceAll(except, "%client%", user->getNickname()) ;
+				try {
+					this->sendMsg(fd, except) ;
+				} catch (const std::exception &ex) {}
+			}
 			this->closeClient(fd) ;
 		}
 	}
 }
 
-// TODO: Add throw and disconnect client if necessary
 void	Server::sendMsg(int fd, std::string msg) const {
 	if (msg.empty())
 		return ;
@@ -274,13 +277,12 @@ void	Server::sendMsg(int fd, std::string msg) const {
 	std::cout << BLUE << "[SRV->CLI[" << fd << "]] " << debugShowInvisibleChar(msg) << "\e[0m" << std::endl;
 	if (send(fd, msg.c_str(), msg.size(), 0) < 0) {
 		std::cerr << "send error: " << strerror(errno) << std::endl;
-		// THROW EXCEPTION here and disconnect client after in catch
+		// TODO: Change this to better exception
+		throw std::exception() ;
 	}
 }
 
-
-// Clem j'te laisse ranger ca ou tu veux
-/* Get */
+/* Getters */
 
 User *Server::getUserByFd(int fd) const {
 	try {
