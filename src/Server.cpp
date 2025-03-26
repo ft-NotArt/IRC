@@ -1,10 +1,12 @@
 /* Includes */
 
 #include "Server.hpp"
+#include "Errors.hpp"
 
 /* Temp */
 #define GREEN "\e[1;32m"
 #define LIGHT_GREEN "\e[1;92m"
+#define LIGHT_RED "\e[1;91m"
 #define BLUE "\e[1;34m"
 #define GRAY "\e[1;90m"
 #define RESET "\e[0m"
@@ -26,6 +28,16 @@ static std::string debugShowInvisibleChar(const std::string& buffer) {
 	return oss.str();
 }
 /* End temp */
+
+// TODO: Move to another place
+void replaceAll(std::string& str, const std::string& from, const std::string& to) {
+	if (from.empty()) return;
+	size_t start_pos = 0;
+	while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
+		str.replace(start_pos, from.length(), to);
+		start_pos += to.length(); // Advance position
+	}
+}
 
 /* Constructor */
 
@@ -139,28 +151,33 @@ void Server::acceptClient() {
 	}
 }
 
+// TODO: Remove user from channels variables
+void	Server::closeClient(int fd) {
+	std::cout << "Client " << fd << " disconnected." << std::endl;
+	epoll_ctl(this->epollFd, EPOLL_CTL_DEL, fd, NULL);
+	close(fd);
+	this->clientBuffers.erase(fd);
+	this->users.erase(fd) ;
+}
+
 // TODO: Add throw and disconnect client if necessary
+// Diconnect are done in closeClient but maybe we should throw
 void	Server::receiveMsg(int fd) {
 	char buff[BUFFER_SIZE];
 	int readBytes = recv(fd, buff, sizeof(buff) - 1, 0);
 
 	if (readBytes < 0) {
 		std::cerr << "read error on fd " << fd << ": " << strerror(errno) << std::endl;
-		epoll_ctl(this->epollFd, EPOLL_CTL_DEL, fd, NULL);
-		close(fd);
-		this->clientBuffers.erase(fd);
-		// continue;
+		this->closeClient(fd);
+		// return;
 	}
 	if (readBytes == 0) {
-		std::cout << "Client " << fd << " disconnected." << std::endl;
-		epoll_ctl(this->epollFd, EPOLL_CTL_DEL, fd, NULL);
-		close(fd);
-		clientBuffers.erase(fd);
-		// continue;
+		this->closeClient(fd);
+		// return;
 	}
 
 	buff[readBytes] = '\0';
-	std::cout << GRAY << "[CLI[" << fd << "]->SRV/RAW] " << debugShowInvisibleChar(buff) << "\e[0m" << std::endl;
+	/* DEBUG */ std::cout << GRAY << "[CLI[" << fd << "]->SRV/RAW] " << debugShowInvisibleChar(buff) << "\e[0m" << std::endl;
 	this->clientBuffers[fd] += buff;
 }
 
@@ -168,11 +185,12 @@ void	Server::processMsg(int fd) {
 	size_t pos = this->clientBuffers[fd].find("\r\n");
 	while (pos != std::string::npos) {
 		std::string message = this->clientBuffers[fd].substr(0, pos);
-		std::cout << GREEN << "[CLI[" << fd << "]->SRV] " << debugShowInvisibleChar(message) << "\e[0m" << std::endl;
+		/* DEBUG */ std::cout << GREEN << "[CLI[" << fd << "]->SRV] " << debugShowInvisibleChar(message) << "\e[0m" << std::endl;
 
-		// TODO: Here we should handle the message received before cleaning it
+		this->clientBuffers[fd].erase(0, pos + 2);
+		pos = this->clientBuffers[fd].find("\r\n");
 
-		// TODO: add tr catch
+		// TODO: add try catch
 
 		User *user = this->getUserByFd(fd) ;
 		if (!user)
@@ -189,42 +207,38 @@ void	Server::processMsg(int fd) {
 			if (!user->getUsername().empty())
 				this->RPL_WELCOME(this->getUserByFd(fd));
 		}
+		else if (std::strncmp(message.c_str(), MSG_CLI_PASS, std::strlen(MSG_CLI_PASS)) == 0) {
+			user->setPassword(message.substr(std::strlen(MSG_CLI_PASS)));
+		}
 		else if (message.compare(0, std::strlen(MSG_CLI_NICK), MSG_CLI_NICK) == 0) {
-			if (!user->isAuthenticated()) {
-				std::string errorMsg = "464 * :Password incorrect\r\n";
-				send(fd, errorMsg.c_str(), errorMsg.size(), 0);
-				epoll_ctl(epollFd, EPOLL_CTL_DEL, fd, NULL);
-				close(fd);
-				this->clientBuffers.erase(fd);
-				continue;
-			}
 			user->setNickname(message.substr(std::strlen(MSG_CLI_NICK)));
 		}
 		else if (message.compare(0, std::strlen(MSG_CLI_USER), MSG_CLI_USER) == 0) {
 			user->setUsername(message.substr(std::strlen(MSG_CLI_USER), message.find(' ', std::strlen(MSG_CLI_USER))));
-			if (user->hasRequestCap())
-				this->RPL_WELCOME(this->getUserByFd(fd));
-		}
-		else if (std::strncmp(message.c_str(), MSG_CLI_PING, std::strlen(MSG_CLI_PING)) == 0) {
-			this->MSG_PONG(user, message.substr(std::strlen(MSG_CLI_PING))) ;
-		}
-		else if (std::strncmp(message.c_str(), MSG_CLI_PASS, std::strlen(MSG_CLI_PASS)) == 0) {
-			std::string receivedPass = message.substr(std::strlen(MSG_CLI_PASS));
 
-			if (receivedPass != this->password) {
-				std::string errorMsg = "464 * :Password incorrect\r\n";
-				send(fd, errorMsg.c_str(), errorMsg.size(), 0);
-				epoll_ctl(epollFd, EPOLL_CTL_DEL, fd, NULL);
-				close(fd);
-				this->clientBuffers.erase(fd);
+			if (user->getPassword() != this->password) {
+				/* DEBUG */ std::cout << LIGHT_RED << "[DBUG|CLI[" << fd << "]] Client " << fd << " failed authentication." << "\e[0m" << std::endl;
+
+				IrcException::PasswdMismatch passwordMismatch;
+				std::string except(passwordMismatch.what());
+				std::cout << "Nick: " << user->getNickname() << std::endl ;
+				replaceAll(except, "%client%", user->getNickname()) ;
+				std::cout << " " << except << std::endl;
+				this->sendMsg(fd, except) ;
+				this->closeClient(fd) ;
 				continue;
 			}
 
-			user->setAuthenticated(true) ;
-			std::cout << LIGHT_GREEN << "[DBUG|CLI[" << fd << "]] Client " << fd << " authenticated successfully." << "\e[0m" << std::endl;
+			/* DEBUG */ std::cout << LIGHT_GREEN << "[DBUG|CLI[" << fd << "]] Client " << fd << " authenticated successfully." << "\e[0m" << std::endl;
+
+			if (user->hasRequestCap())
+				this->RPL_WELCOME(this->getUserByFd(fd));
 		}
-		this->clientBuffers[fd].erase(0, pos + 2);
-		pos = this->clientBuffers[fd].find("\r\n");
+		// *** COMMANDS *** //
+		else if (std::strncmp(message.c_str(), MSG_CLI_PING, std::strlen(MSG_CLI_PING)) == 0) {
+			this->MSG_PONG(user, message.substr(std::strlen(MSG_CLI_PING))) ;
+		}
+
 	}
 }
 
@@ -238,9 +252,7 @@ void	Server::sendMsg(int fd, std::string msg) const {
 	std::cout << BLUE << "[SRV->CLI[" << fd << "]] " << debugShowInvisibleChar(msg) << "\e[0m" << std::endl;
 	if (send(fd, msg.c_str(), msg.size(), 0) < 0) {
 		std::cerr << "send error: " << strerror(errno) << std::endl;
-		epoll_ctl(this->epollFd, EPOLL_CTL_DEL, fd, NULL);
-		close(fd);
-		return;
+		// THROW EXCEPTION here and disconnect client after in catch
 	}
 }
 
