@@ -237,13 +237,13 @@ void	Server::processMsg(int fd) {
 				// this->PART(user, message.substr(std::strlen(MSG_CLI_PART))) ;
 			}
 			else if (std::strncmp(message.c_str(), MSG_CLI_PRIVMSG, std::strlen(MSG_CLI_PRIVMSG)) == 0) {
-				// this->PRIVMSG(user, message.substr(std::strlen(MSG_CLI_PRIVMSG))) ;
+				this->PRIVMSG(user, message.substr(std::strlen(MSG_CLI_PRIVMSG))) ;
 			}
 			else if (std::strncmp(message.c_str(), MSG_CLI_TOPIC, std::strlen(MSG_CLI_TOPIC)) == 0) {
 				// this->TOPIC(user, message.substr(std::strlen(MSG_CLI_TOPIC))) ;
 			}
 			else if (std::strncmp(message.c_str(), MSG_CLI_KICK, std::strlen(MSG_CLI_KICK)) == 0) {
-				// this->KICK(user, message.substr(std::strlen(MSG_CLI_KICK))) ;
+				// this->KICK(user, message.substr(std::strlen(MSG_CLI_KICK))x) ;
 			}
 			else if (std::strncmp(message.c_str(), MSG_CLI_MODE, std::strlen(MSG_CLI_MODE)) == 0) {
 				// this->MODE(user, message.substr(std::strlen(MSG_CLI_MODE))) ;

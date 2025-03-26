@@ -6,6 +6,8 @@
 class Channel ;
 class User ;
 
+#include <string>
+#include <sstream>
 #include <unistd.h>
 #include <vector>
 #include <map>
@@ -77,19 +79,12 @@ class Server {
 		void 	sendMsg(int fd, std::string msg) const ;
 
 		// Commands
-		// void	QUIT(const User *client, std::vector<std::string> args);
-		// void	PRIVMSG(const User *client, std::vector<std::string> args);
-		// void	INVITE(const User *client, std::vector<std::string> args);
-		// void	KICK(const User *client, std::vector<std::string> args);
-		// void	MODE(const User *client, std::vector<std::string> args);
-		// void	TOPIC(const User *client, std::vector<std::string> args);
-
-		void	QUIT(const User *client, const std::string &args);
-		// void	PRIVMSG(const User *client, const std::string &args);
-		// void	INVITE(const User *client, const std::string &args);
-		// void	KICK(const User *client, const std::string &args);
-		// void	MODE(const User *client, const std::string &args);
-		// void	TOPIC(const User *client, const std::string &args);
+		void	QUIT(const User *client, const std::string &msg);
+		void 	PRIVMSG(const User *client, const std::string &msg);
+		void	INVITE(const User *client, const std::string &args);
+		void	KICK(const User *client, const std::string &args);
+		void	MODE(const User *client, const std::string &args);
+		void	TOPIC(const User *client, const std::string &args);
 
 		void	RPL_WELCOME(const User *client)																						const ;
 		void	RPL_NAMREPLY(const User *client, const Channel &channel)															const ;
