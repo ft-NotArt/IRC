@@ -195,6 +195,7 @@ void	Server::processMsg(int fd) {
 			this->MSG_CAP_ACK(user, "multi-prefix") ; // TODO: Refactor for better implementation
 		}
 		else if (message.compare(0, std::strlen(MSG_CLI_CAP_END), MSG_CLI_CAP_END) == 0) {
+			user->setRequestCap(true) ;
 			if (!user->getUsername().empty())
 				this->RPL_WELCOME(this->getUserByFd(fd));
 		}

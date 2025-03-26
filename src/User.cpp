@@ -5,4 +5,4 @@
 
 /* Constructor */
 
-User::User(int fd) : fd(fd), authenticated(false) {}
+User::User(int fd) : fd(fd), authenticated(false), requestCap(false) {}
