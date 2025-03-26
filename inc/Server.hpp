@@ -31,7 +31,16 @@ class User ;
 #define MSG_CLI_PASS		"PASS "
 #define MSG_CLI_NICK		"NICK "
 #define MSG_CLI_USER		"USER "
+
 #define MSG_CLI_PING		"PING "
+#define MSG_CLI_QUIT		"QUIT "
+#define MSG_CLI_JOIN		"JOIN "
+#define MSG_CLI_PART		"PART "
+#define MSG_CLI_PRIVMSG		"PRIVMSG "
+#define MSG_CLI_TOPIC		"TOPIC "
+#define MSG_CLI_KICK		"KICK "
+#define MSG_CLI_MODE		"MODE "
+#define MSG_CLI_INVITE		"INVITE "
 
 class Server {
 	private:

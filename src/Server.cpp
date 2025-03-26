@@ -223,11 +223,37 @@ void	Server::processMsg(int fd) {
 				if (user->hasRequestCap())
 					this->RPL_WELCOME(this->getUserByFd(fd));
 			}
-			// *** COMMANDS *** //
+			// *** COMMANDS *** // // TODO : Uncomment when implemented
 			else if (std::strncmp(message.c_str(), MSG_CLI_PING, std::strlen(MSG_CLI_PING)) == 0) {
 				this->MSG_PONG(user, message.substr(std::strlen(MSG_CLI_PING))) ;
 			}
-
+			else if (std::strncmp(message.c_str(), MSG_CLI_QUIT, std::strlen(MSG_CLI_QUIT)) == 0) {
+				// this->QUIT(user, message.substr(std::strlen(MSG_CLI_QUIT))) ;
+			}
+			else if (std::strncmp(message.c_str(), MSG_CLI_JOIN, std::strlen(MSG_CLI_JOIN)) == 0) {
+				// this->JOIN(user, message.substr(std::strlen(MSG_CLI_JOIN))) ;
+			}
+			else if (std::strncmp(message.c_str(), MSG_CLI_PART, std::strlen(MSG_CLI_PART)) == 0) {
+				// this->PART(user, message.substr(std::strlen(MSG_CLI_PART))) ;
+			}
+			else if (std::strncmp(message.c_str(), MSG_CLI_PRIVMSG, std::strlen(MSG_CLI_PRIVMSG)) == 0) {
+				// this->PRIVMSG(user, message.substr(std::strlen(MSG_CLI_PRIVMSG))) ;
+			}
+			else if (std::strncmp(message.c_str(), MSG_CLI_TOPIC, std::strlen(MSG_CLI_TOPIC)) == 0) {
+				// this->TOPIC(user, message.substr(std::strlen(MSG_CLI_TOPIC))) ;
+			}
+			else if (std::strncmp(message.c_str(), MSG_CLI_KICK, std::strlen(MSG_CLI_KICK)) == 0) {
+				// this->KICK(user, message.substr(std::strlen(MSG_CLI_KICK))) ;
+			}
+			else if (std::strncmp(message.c_str(), MSG_CLI_MODE, std::strlen(MSG_CLI_MODE)) == 0) {
+				// this->MODE(user, message.substr(std::strlen(MSG_CLI_MODE))) ;
+			}
+			else if (std::strncmp(message.c_str(), MSG_CLI_INVITE, std::strlen(MSG_CLI_INVITE)) == 0) {
+				// this->INVITE(user, message.substr(std::strlen(MSG_CLI_INVITE))) ;
+			}
+			else if (std::strncmp(message.c_str(), MSG_CLI_NICK, std::strlen(MSG_CLI_NICK)) == 0) {
+				// this->NICK(user, message.substr(std::strlen(MSG_CLI_NICK))) ;
+			}
 		} catch (const IrcException::PasswdMismatch &e) {
 			/* DEBUG */ std::cout << LIGHT_RED << "[DBUG|CLI[" << fd << "]] Client " << fd << " failed authentication." << "\e[0m" << std::endl;
 			std::string except(e.what());
