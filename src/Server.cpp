@@ -1,15 +1,5 @@
 /* Includes */
 
-#include <unistd.h>
-#include <iostream>
-#include <cstdlib>
-#include <cstring>
-#include <cerrno>
-#include <sys/socket.h>
-#include <sys/epoll.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-
 #include "Server.hpp"
 
 /* Temp */
@@ -60,7 +50,7 @@ void Server::createSocket(void) {
 	}
 
 	struct sockaddr_in servAddr;
-	memset(&servAddr, 0, sizeof(servAddr));
+	bzero(&servAddr, sizeof(servAddr));
 	servAddr.sin_family = AF_INET;
 	servAddr.sin_addr.s_addr = INADDR_ANY;
 	servAddr.sin_port = htons(this->port);

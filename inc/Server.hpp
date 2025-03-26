@@ -6,11 +6,18 @@
 class Channel ;
 class User ;
 
-#include <string>
+#include <unistd.h>
 #include <vector>
 #include <map>
 #include <set>
+#include <iostream>
+#include <cstdlib>
+#include <cstring>
+#include <cerrno>
+#include <sys/socket.h>
 #include <sys/epoll.h>
+#include <sys/types.h>
+#include <netinet/in.h>
 
 #define SERVER_NAME		"Internet_Relay_Chat"
 
