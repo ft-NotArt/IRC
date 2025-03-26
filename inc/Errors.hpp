@@ -6,177 +6,212 @@ class IrcException {
 	public:
 		/// @brief Indicates that no client can be found for the supplied nickname. The text used in the last param of this message may vary.
 		class NoSuchNick : public std::exception {
-			virtual const char *what() const throw() { return ":IRC 401 %client% %nick% :No such nick/channel"; };
+			public:
+				virtual const char *what() const throw() { return ":IRC 401 %client% %nick% :No such nick/channel"; };
 		};
 
 		/// @brief Indicates that the given server name does not exist. The text used in the last param of this message may vary.
 		class NoSuchServer : public std::exception {
-			virtual const char *what() const throw() { return ":IRC 402 %client% %servername% :No such server"; };
+			public:
+				virtual const char *what() const throw() { return ":IRC 402 %client% %servername% :No such server"; };
 		};
 
 		/// @brief Indicates that no channel can be found for the supplied channel name. The text used in the last param of this message may vary.
 		class NoSuchChannel : public std::exception {
-			virtual const char *what() const throw() { return ":IRC 403 %client% %channel% :No such channel"; };
+			public:
+				virtual const char *what() const throw() { return ":IRC 403 %client% %channel% :No such channel"; };
 		};
 
 		/// @brief Returned by the PRIVMSG command to indicate the message wasn’t delivered because there was no text to send.
 		class NoTextToSend : public std::exception {
-			virtual const char *what() const throw() { return ":IRC 412 %client% :No text to send"; };
+			public:
+				virtual const char *what() const throw() { return ":IRC 412 %client% :No text to send"; };
 		};
 
 		/// @brief Indicates a given line does not follow the specified size limits (512 bytes for the main section, 4094 or 8191 bytes for the tag section).
 		class InputTooLong : public std::exception {
-			virtual const char *what() const throw() { return ":IRC 417 %client% :Input line was too long"; };
+			public:
+				virtual const char *what() const throw() { return ":IRC 417 %client% :Input line was too long"; };
 		};
 
 		/// @brief Sent to a registered client to indicate that the command they sent isn’t known by the server. The text used in the last param of this message may vary.
 		class UnknownCommand : public std::exception {
-			virtual const char *what() const throw() { return ":IRC 421 %client% %command% :Unknown command"; };
+			public:
+				virtual const char *what() const throw() { return ":IRC 421 %client% %command% :Unknown command"; };
 		};
 
 		/// @brief Indicates that the Message of the Day file does not exist or could not be found. The text used in the last param of this message may vary.
 		class NoMotd : public std::exception {
-			virtual const char *what() const throw() { return ":IRC 422 %client% :MOTD File is missing"; };
+			public:
+				virtual const char *what() const throw() { return ":IRC 422 %client% :MOTD File is missing"; };
 		};
 
 		/// @brief Indicates that the PRIVMSG / NOTICE could not be delivered to <channel>. The text used in the last param of this message may vary. This is generally sent in response to channel modes, such as a channel being moderated and the client not having permission to speak on the channel, or not being joined to a channel with the no external messages mode set.
 		class CannotSendToChan : public std::exception {
-			virtual const char *what() const throw() { return ":IRC 404 %client% %channel% :Cannot send to channel"; };
+			public:
+				virtual const char *what() const throw() { return ":IRC 404 %client% %channel% :Cannot send to channel"; };
 		};
 
 		/// @brief Indicates that the JOIN command failed because the client has joined their maximum number of channels. The text used in the last param of this message may vary.
 		class TooManyChannels : public std::exception {
-			virtual const char *what() const throw() { return ":IRC 405 %client% %channel% :You have joined too many channels"; };
+			public:
+				virtual const char *what() const throw() { return ":IRC 405 %client% %channel% :You have joined too many channels"; };
 		};
 
 		/// @brief Returned as a reply to WHOWAS to indicate there is no history information for that nickname.
 		class WasNoSuckNick : public std::exception {
-			virtual const char *what() const throw() { return ":IRC 406 %client% %nick% :There was no such nickname"; };
+			public:
+				virtual const char *what() const throw() { return ":IRC 406 %client% %nick% :There was no such nickname"; };
 		};
 
 		/// @brief Returned when a nickname parameter is expected for a command but isn’t given.
 		class NoNicknameGivenException : public std::exception {
-			virtual const char *what() const throw() { return ":IRC 431 %client% :No nickname given"; };
+			public:
+				virtual const char *what() const throw() { return ":IRC 431 %client% :No nickname given"; };
 		};
 
 		/// @brief Returned when a NICK command cannot be successfully completed as the desired nickname contains characters that are disallowed by the server. See the NICK command for more information on characters which are allowed in various IRC servers. The text used in the last param of this message may vary.
 		class ErroneusNicknameException : public std::exception {
-			virtual const char *what() const throw() { return ":IRC 432 %client% %nick% :Erroneus nickname"; };
+			public:
+				virtual const char *what() const throw() { return ":IRC 432 %client% %nick% :Erroneus nickname"; };
 		};
 
 		/// @brief Returned when a NICK command cannot be successfully completed as the desired nickname is already in use on the network. The text used in the last param of this message may vary.
 		class NicknameInUseException : public std::exception {
-			virtual const char *what() const throw() { return ":IRC 432 %client% %nick% :Nickname is already in use"; };
+			public:
+				virtual const char *what() const throw() { return ":IRC 432 %client% %nick% :Nickname is already in use"; };
 		};
 
 		/// @brief Returned when a client tries to perform a channel+nick affecting command, when the nick isn’t joined to the channel (for example, MODE #channel +o nick).
 		class UserNotInChannelException : public std::exception {
-			virtual const char *what() const throw() { return ":IRC 441 %client% %nick% %channel% :They aren't on that channel"; };
+			public:
+				virtual const char *what() const throw() { return ":IRC 441 %client% %nick% %channel% :They aren't on that channel"; };
 		};
 
 		/// @brief Returned when a client tries to perform a channel-affecting command on a channel which the client isn’t a part of.
 		class NotOnChannel : public std::exception {
-			virtual const char *what() const throw() { return ":IRC 442 %client% %channel% :You're not on that channel"; };
+			public:
+				virtual const char *what() const throw() { return ":IRC 442 %client% %channel% :You're not on that channel"; };
 		};
 
 		/// @brief Returned when a client tries to invite <nick> to a channel they’re already joined to.
 		class UserOnChannel : public std::exception {
-			virtual const char *what() const throw() { return ":IRC 443 %client% %nick% %channel% :is already on channel"; };
+			public:
+				virtual const char *what() const throw() { return ":IRC 443 %client% %nick% %channel% :is already on channel"; };
 		};
 
 		/// @brief Returned when a client command cannot be parsed as they are not yet registered. Servers offer only a limited subset of commands until clients are properly registered to the server. The text used in the last param of this message may vary.
 		class NotRegistered : public std::exception {
-			virtual const char *what() const throw() { return ":IRC 451 %client% :You have not registered"; };
+			public:
+				virtual const char *what() const throw() { return ":IRC 451 %client% :You have not registered"; };
 		};
 
 		/// @brief Returned when a client command cannot be parsed because not enough parameters were supplied. The text used in the last param of this message may vary.
 		class NeedMoreParams : public std::exception {
-			virtual const char *what() const throw() { return ":IRC 461 %client% %command% :Not enough parameters"; };
+			public:
+				virtual const char *what() const throw() { return ":IRC 461 %client% %command% :Not enough parameters"; };
 		};
 
 		/// @brief Returned when a client tries to change a detail that can only be set during registration (such as resending the PASS or USER after registration). The text used in the last param of this message varies.
 		class AlreadyRegistered : public std::exception {
-			virtual const char *what() const throw() { return ":IRC 462	 %client% :You may not reregister"; };
+			public:
+				virtual const char *what() const throw() { return ":IRC 462	 %client% :You may not reregister"; };
 		};
 
 		/// @brief Returned to indicate that the connection could not be registered as the password was either incorrect or not supplied. The text used in the last param of this message may vary.
 		class PasswdMismatch : public std::exception {
-			virtual const char *what() const throw() { return ":IRC 464	%client% :Password incorrect"; };
+			public:
+				virtual const char *what() const throw() { return ":IRC 464	%client% :Password incorrect"; };
 		};
 
 		/// @brief Returned to indicate that the server has been configured to explicitly deny connections from this client. The text used in the last param of this message varies wildly and typically also contains the reason for the ban and/or ban details, and SHOULD be displayed as-is by IRC clients to their users.
 		class YourReBannedCreep : public std::exception {
-			virtual const char *what() const throw() { return ":IRC 465	%client% :You are banned from this server."; };
+			public:
+				virtual const char *what() const throw() { return ":IRC 465	%client% :You are banned from this server."; };
 		};
 
 		/// @brief Returned to indicate that a JOIN command failed because the client limit mode has been set and the maximum number of users are already joined to the channel. The text used in the last param of this message may vary.
 		class ChannelIsFull : public std::exception {
-			virtual const char *what() const throw() { return ":IRC 471	%client% %channel% :Cannot join channel (+l)"; };
+			public:
+				virtual const char *what() const throw() { return ":IRC 471	%client% %channel% :Cannot join channel (+l)"; };
 		};
 
 		/// @brief Indicates that a mode character used by a client is not recognized by the server. The text used in the last param of this message may vary.
 		class UnknownMode : public std::exception {
-			virtual const char *what() const throw() { return ":IRC 472	%client% %modechar% :is unknown mode char to me"; };
+			public:
+				virtual const char *what() const throw() { return ":IRC 472	%client% %modechar% :is unknown mode char to me"; };
 		};
 
 		/// @brief Returned to indicate that a JOIN command failed because the channel is set to [invite-only] mode and the client has not been invited to the channel or had an invite exception set for them. The text used in the last param of this message may vary.
 		class InviteOnlyChan : public std::exception {
-			virtual const char *what() const throw() { return ":IRC 473	%client% %channel% :Cannot join channel (+i)"; };
+			public:
+				virtual const char *what() const throw() { return ":IRC 473	%client% %channel% :Cannot join channel (+i)"; };
 		};
 
 		/// @brief Returned to indicate that a JOIN command failed because the client has been banned from the channel and has not had a ban exception set for them. The text used in the last param of this message may vary.
 		class BannedFromChan : public std::exception {
-			virtual const char *what() const throw() { return ":IRC 474	%client% %channel% :Cannot join channel (+b)"; };
+			public:
+				virtual const char *what() const throw() { return ":IRC 474	%client% %channel% :Cannot join channel (+b)"; };
 		};
 
 		/// @brief Returned to indicate that a JOIN command failed because the channel requires a key and the key was either incorrect or not supplied. The text used in the last param of this message may vary. Not to be confused with ERR_INVALIDKEY, which may be returned when setting a key.
 		class BadChannelKey : public std::exception {
-			virtual const char *what() const throw() { return ":IRC 475	%client% %channel% :Cannot join channel (+k)"; };
+			public:
+				virtual const char *what() const throw() { return ":IRC 475	%client% %channel% :Cannot join channel (+k)"; };
 		};
 
 		/// @brief Indicates the supplied channel name is not a valid. This is similar to, but stronger than, ERR_NOSUCHCHANNEL (403), which indicates that the channel does not exist, but that it may be a valid name. The text used in the last param of this message may vary.
 		class BadChanMask : public std::exception {
-			virtual const char *what() const throw() { return ":IRC 476 %channel% :Bad Channel Mask"; };
+			public:
+				virtual const char *what() const throw() { return ":IRC 476 %channel% :Bad Channel Mask"; };
 		};
 
 		/// @brief Indicates that the command failed because the user is not an IRC operator. The text used in the last param of this message may vary.
 		class NoPrivileges : public std::exception {
-			virtual const char *what() const throw() { return ":IRC 481 %client% :Permission Denied- You're not an IRC operator"; };
+			public:
+				virtual const char *what() const throw() { return ":IRC 481 %client% :Permission Denied- You're not an IRC operator"; };
 		};
 
 		/// @brief Indicates that a command failed because the client does not have the appropriate channel privileges. This numeric can apply for different prefixes such as halfop, operator, etc. The text used in the last param of this message may vary.
 		class ChanoPrivNeeded : public std::exception {
-			virtual const char *what() const throw() { return ":IRC 482 %client% %channel% :You're not channel operator"; };
+			public:
+				virtual const char *what() const throw() { return ":IRC 482 %client% %channel% :You're not channel operator"; };
 		};
 
 		/// @brief Indicates that a KILL command failed because the user tried to kill a server. The text used in the last param of this message may vary.
 		class CantKillServer : public std::exception {
-			virtual const char *what() const throw() { return ":IRC 483 %client% :You cant kill a server!"; };
+			public:
+				virtual const char *what() const throw() { return ":IRC 483 %client% :You cant kill a server!"; };
 		};
 
 		/// @brief Indicates that an OPER command failed because the server has not been configured to allow connections from this client’s host to become an operator. The text used in the last param of this message may vary.
 		class NoOperHost : public std::exception {
-			virtual const char *what() const throw() { return ":IRC 491 %client% :No O-lines for your host"; };
+			public:
+				virtual const char *what() const throw() { return ":IRC 491 %client% :No O-lines for your host"; };
 		};
 
 		/// @brief Indicates that a MODE command affecting a user contained a MODE letter that was not recognized. The text used in the last param of this message may vary.
 		class UModeUnknownFlag : public std::exception {
-			virtual const char *what() const throw() { return ":IRC 501 %client% :Unknown MODE flag"; };
+			public:
+				virtual const char *what() const throw() { return ":IRC 501 %client% :Unknown MODE flag"; };
 		};
 
 		/// @brief Indicates that a MODE command affecting a user failed because they were trying to set or view modes for other users. The text used in the last param of this message varies, for instance when trying to view modes for another user, a server may send: "Can't view modes for other users".
 		class UsersDontMatch : public std::exception {
-			virtual const char *what() const throw() { return ":IRC 502 %client% :Cant change mode for other users"; };
+			public:
+				virtual const char *what() const throw() { return ":IRC 502 %client% :Cant change mode for other users"; };
 		};
 
 		/// @brief Indicates that a HELP command requested help on a subject the server does not know about. The <subject> MUST be the one requested by the client, but may be casefolded; unless it would be an invalid parameter, in which case it MUST be *.
 		class HelpNotFound : public std::exception {
-			virtual const char *what() const throw() { return ":IRC 524 %client% %subject% :No help available on this topic"; };
+			public:
+				virtual const char *what() const throw() { return ":IRC 524 %client% %subject% :No help available on this topic"; };
 		};
 
 		/// @brief Indicates the value of a key channel mode change (+k) was rejected. Not to be confused with ERR_BADCHANNELKEY, which is returned when someone tries to join a channel.
 		class InvalidKey : public std::exception {
-			virtual const char *what() const throw() { return ":IRC 525 %client% %target chan% :Key is not well-formed"; };
+			public:
+				virtual const char *what() const throw() { return ":IRC 525 %client% %target chan% :Key is not well-formed"; };
 		};
 };
 
