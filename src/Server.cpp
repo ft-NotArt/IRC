@@ -190,55 +190,51 @@ void	Server::processMsg(int fd) {
 		this->clientBuffers[fd].erase(0, pos + 2);
 		pos = this->clientBuffers[fd].find("\r\n");
 
-		// TODO: add try catch
-
 		User *user = this->getUserByFd(fd) ;
 		if (!user)
 			continue ;
 
-		if (message.compare(0, std::strlen(MSG_CLI_CAP_LS), MSG_CLI_CAP_LS) == 0) {
-			this->MSG_CAP_LS(user) ;
-		}
-		else if (message.compare(0, std::strlen(MSG_CLI_CAP_REQ), MSG_CLI_CAP_REQ) == 0) {
-			this->MSG_CAP_ACK(user, "multi-prefix") ; // TODO: Refactor for better implementation
-		}
-		else if (message.compare(0, std::strlen(MSG_CLI_CAP_END), MSG_CLI_CAP_END) == 0) {
-			user->setRequestCap(true) ;
-			if (!user->getUsername().empty())
-				this->RPL_WELCOME(this->getUserByFd(fd));
-		}
-		else if (std::strncmp(message.c_str(), MSG_CLI_PASS, std::strlen(MSG_CLI_PASS)) == 0) {
-			user->setPassword(message.substr(std::strlen(MSG_CLI_PASS)));
-		}
-		else if (message.compare(0, std::strlen(MSG_CLI_NICK), MSG_CLI_NICK) == 0) {
-			user->setNickname(message.substr(std::strlen(MSG_CLI_NICK)));
-		}
-		else if (message.compare(0, std::strlen(MSG_CLI_USER), MSG_CLI_USER) == 0) {
-			user->setUsername(message.substr(std::strlen(MSG_CLI_USER), message.find(' ', std::strlen(MSG_CLI_USER))));
+		try {
+			if (message.compare(0, std::strlen(MSG_CLI_CAP_LS), MSG_CLI_CAP_LS) == 0) {
+				this->MSG_CAP_LS(user) ;
+			}
+			else if (message.compare(0, std::strlen(MSG_CLI_CAP_REQ), MSG_CLI_CAP_REQ) == 0) {
+				this->MSG_CAP_ACK(user, "multi-prefix") ; // TODO: Refactor for better implementation
+			}
+			else if (message.compare(0, std::strlen(MSG_CLI_CAP_END), MSG_CLI_CAP_END) == 0) {
+				user->setRequestCap(true) ;
+				if (!user->getUsername().empty())
+					this->RPL_WELCOME(this->getUserByFd(fd));
+			}
+			else if (std::strncmp(message.c_str(), MSG_CLI_PASS, std::strlen(MSG_CLI_PASS)) == 0) {
+				user->setPassword(message.substr(std::strlen(MSG_CLI_PASS)));
+			}
+			else if (message.compare(0, std::strlen(MSG_CLI_NICK), MSG_CLI_NICK) == 0) {
+				user->setNickname(message.substr(std::strlen(MSG_CLI_NICK)));
+			}
+			else if (message.compare(0, std::strlen(MSG_CLI_USER), MSG_CLI_USER) == 0) {
+				user->setUsername(message.substr(std::strlen(MSG_CLI_USER), message.find(' ', std::strlen(MSG_CLI_USER))));
 
-			if (user->getPassword() != this->password) {
-				/* DEBUG */ std::cout << LIGHT_RED << "[DBUG|CLI[" << fd << "]] Client " << fd << " failed authentication." << "\e[0m" << std::endl;
+				if (user->getPassword() != this->password)
+					throw IrcException::PasswdMismatch() ;
 
-				IrcException::PasswdMismatch passwordMismatch;
-				std::string except(passwordMismatch.what());
-				std::cout << "Nick: " << user->getNickname() << std::endl ;
-				replaceAll(except, "%client%", user->getNickname()) ;
-				std::cout << " " << except << std::endl;
-				this->sendMsg(fd, except) ;
-				this->closeClient(fd) ;
-				continue;
+				/* DEBUG */ std::cout << LIGHT_GREEN << "[DBUG|CLI[" << fd << "]] Client " << fd << " authenticated successfully." << "\e[0m" << std::endl;
+
+				if (user->hasRequestCap())
+					this->RPL_WELCOME(this->getUserByFd(fd));
+			}
+			// *** COMMANDS *** //
+			else if (std::strncmp(message.c_str(), MSG_CLI_PING, std::strlen(MSG_CLI_PING)) == 0) {
+				this->MSG_PONG(user, message.substr(std::strlen(MSG_CLI_PING))) ;
 			}
 
-			/* DEBUG */ std::cout << LIGHT_GREEN << "[DBUG|CLI[" << fd << "]] Client " << fd << " authenticated successfully." << "\e[0m" << std::endl;
-
-			if (user->hasRequestCap())
-				this->RPL_WELCOME(this->getUserByFd(fd));
+		} catch (const IrcException::PasswdMismatch &e) {
+			/* DEBUG */ std::cout << LIGHT_RED << "[DBUG|CLI[" << fd << "]] Client " << fd << " failed authentication." << "\e[0m" << std::endl;
+			std::string except(e.what());
+			replaceAll(except, "%client%", user->getNickname()) ;
+			this->sendMsg(fd, except) ;
+			this->closeClient(fd) ;
 		}
-		// *** COMMANDS *** //
-		else if (std::strncmp(message.c_str(), MSG_CLI_PING, std::strlen(MSG_CLI_PING)) == 0) {
-			this->MSG_PONG(user, message.substr(std::strlen(MSG_CLI_PING))) ;
-		}
-
 	}
 }
 
