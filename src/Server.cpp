@@ -195,7 +195,8 @@ void	Server::processMsg(int fd) {
 			this->MSG_CAP_ACK(user, "multi-prefix") ; // TODO: Refactor for better implementation
 		}
 		else if (message.compare(0, std::strlen(MSG_CLI_CAP_END), MSG_CLI_CAP_END) == 0) {
-			this->RPL_WELCOME(this->getUserByFd(fd));
+			if (!user->getUsername().empty())
+				this->RPL_WELCOME(this->getUserByFd(fd));
 		}
 		else if (message.compare(0, std::strlen(MSG_CLI_NICK), MSG_CLI_NICK) == 0) {
 			if (!user->isAuthenticated()) {
@@ -209,7 +210,9 @@ void	Server::processMsg(int fd) {
 			user->setNickname(message.substr(std::strlen(MSG_CLI_NICK)));
 		}
 		else if (message.compare(0, std::strlen(MSG_CLI_USER), MSG_CLI_USER) == 0) {
-			user->setUsername(message.substr(std::strlen(MSG_CLI_USER), message.find(' ', std::strlen("USER "))));
+			user->setUsername(message.substr(std::strlen(MSG_CLI_USER), message.find(' ', std::strlen(MSG_CLI_USER))));
+			if (user->hasRequestCap())
+				this->RPL_WELCOME(this->getUserByFd(fd));
 		}
 		else if (std::strncmp(message.c_str(), MSG_CLI_PING, std::strlen(MSG_CLI_PING)) == 0) {
 			this->MSG_PONG(user, message.substr(std::strlen(MSG_CLI_PING))) ;

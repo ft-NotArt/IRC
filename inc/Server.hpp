@@ -19,12 +19,12 @@ class User ;
 #define BUFFER_SIZE 1024
 
 #define MSG_CLI_CAP_LS		"CAP LS"
+#define MSG_CLI_CAP_REQ		"CAP REQ "
 #define MSG_CLI_CAP_END		"CAP END"
 #define MSG_CLI_PASS		"PASS "
-#define MSG_CLI_CAP_REQ		"CAP REQ :multi-prefix"
-#define MSG_CLI_PING		"PING "
 #define MSG_CLI_NICK		"NICK "
 #define MSG_CLI_USER		"USER "
+#define MSG_CLI_PING		"PING "
 
 class Server {
 	private:
