@@ -100,4 +100,5 @@ class Server {
 		void	MSG_CAP_ACK(const User *client, const std::string &request_capa) ;
 		void	MSG_PONG(const User *client, const std::string &token) ;
 		void	MSG_INVITE(const User *client, const User *invited, const Channel &channel) ;
+		void	MSG_ERROR(const User *client, const std::string &reason) ;
 } ;

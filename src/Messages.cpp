@@ -58,3 +58,14 @@ void	Server::MSG_INVITE(const User *client, const User *invited, const Channel &
 
 	this->sendMsg(invited->getFd(), msg) ;
 }
+
+void	Server::MSG_ERROR(const User *client, const std::string &reason) {
+	std::string msg(":") ;
+
+	msg += client->getNickname() ;
+
+	msg += " ERROR :" ;
+	msg += reason ;
+
+	this->sendMsg(client->getFd(), msg) ;
+}
