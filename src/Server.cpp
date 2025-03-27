@@ -152,8 +152,13 @@ void Server::acceptClient() {
 }
 
 // TODO: Remove user from channels variables
-void	Server::closeClient(int fd) {
+void	Server::closeClient(int fd, const std::string &reason) {
+	User *user = this->getUserByFd(fd) ;
+
 	std::cout << "Client " << fd << " disconnected." << std::endl;
+
+	this->MSG_ERROR(user, reason) ;
+
 	epoll_ctl(this->epollFd, EPOLL_CTL_DEL, fd, NULL);
 	close(fd);
 	this->clientBuffers.erase(fd);
@@ -168,11 +173,11 @@ void	Server::receiveMsg(int fd) {
 
 	if (readBytes < 0) {
 		std::cerr << "read error on fd " << fd << ": " << strerror(errno) << std::endl;
-		this->closeClient(fd);
+		this->closeClient(fd, "read error");
 		return;
 	}
 	if (readBytes == 0) {
-		this->closeClient(fd);
+		// this->closeClient(fd); // TODO: Should we really close ?
 		return;
 	}
 
@@ -263,7 +268,7 @@ void	Server::processMsg(int fd) {
 					this->sendMsg(fd, except) ;
 				} catch (const std::exception &ex) {}
 			}
-			this->closeClient(fd) ;
+			this->closeClient(fd, "jsp gros on se chie dessus") ;
 		}
 	}
 }

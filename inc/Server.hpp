@@ -73,7 +73,7 @@ class Server {
 		void 	run(void) ;
 
 		void	acceptClient() ;
-		void	closeClient(int fd) ;
+		void	closeClient(int fd, const std::string &reason) ;
 		void	receiveMsg(int fd) ;
 		void	processMsg(int fd) ;
 		void 	sendMsg(int fd, std::string msg) const ;
