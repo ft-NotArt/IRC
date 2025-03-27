@@ -79,6 +79,12 @@ class IrcException {
 				virtual const char *what() const throw() { return ":Internet_Relay_Chat 406 %client% %nick% :There was no such nickname"; };
 		};
 
+		/// @brief Returned by the PRIVMSG command to indicate the message wasn’t delivered because there was no recipient given.
+		class NoRecipient : public std::exception {
+			public:
+				virtual const char *what() const throw() { return ":Internet_Relay_Chat 411 %client% :No recipient given (%command%)"; };
+		};
+
 		/// @brief Returned when a nickname parameter is expected for a command but isn’t given.
 		class NoNicknameGivenException : public std::exception {
 			public:

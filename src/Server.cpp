@@ -255,12 +255,16 @@ void	Server::processMsg(int fd) {
 					std::string tmp ;
 					while (ss >> tmp)
 						targets.push_back(tmp) ;
+					
+					if (targets.empty())
+						throw IrcException::NoRecipient() ;
 				
 					this->PRIVMSG(user, targets, text) ;
 				
 				} catch(const std::exception& e) {
 					std::string except(e.what());
 					replaceAll(except, "%client%", user->getNickname()) ;
+					replaceAll(except, "%command%", MSG_CLI_PRIVMSG) ;
 					try {
 						this->sendMsg(fd, except) ;
 					} catch (const std::exception &ex) {}
