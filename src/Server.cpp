@@ -1,8 +1,7 @@
 /* Includes */
 
 #include "Server.hpp"
-#include "Errors.hpp"
-#include "Utils.hpp"
+
 
 /* Temp */
 #define GREEN "\e[1;32m"
@@ -30,15 +29,6 @@ static std::string debugShowInvisibleChar(const std::string& buffer) {
 }
 /* End temp */
 
-// TODO: Move to another place
-void replaceAll(std::string& str, const std::string& from, const std::string& to) {
-	if (from.empty()) return;
-	size_t start_pos = 0;
-	while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
-		str.replace(start_pos, from.length(), to);
-		start_pos += to.length(); // Advance position
-	}
-}
 
 /* Constructor */
 
@@ -268,20 +258,6 @@ void	Server::processMsg(int fd) {
 				
 					this->PRIVMSG(user, targets, text) ;
 				
-				} catch(const IrcException::NoSuchNick& e) {
-					std::string except(e.what());
-					replaceAll(except, "%client%", user->getNickname()) ;
-					replaceAll(except, "%nick%", e.nick) ;
-					try {
-						this->sendMsg(fd, except) ;
-					} catch (const std::exception &ex) {}
-				} catch(const IrcException::NoSuchChannel& e) {
-					std::string except(e.what());
-					replaceAll(except, "%client%", user->getNickname()) ;
-					replaceAll(except, "%channel%", e.channel) ;
-					try {
-						this->sendMsg(fd, except) ;
-					} catch (const std::exception &ex) {}
 				} catch(const std::exception& e) {
 					std::string except(e.what());
 					replaceAll(except, "%client%", user->getNickname()) ;

@@ -6,12 +6,15 @@ class IrcException {
 	public:
 		/// @brief Indicates that no client can be found for the supplied nickname. The text used in the last param of this message may vary.
 		class NoSuchNick : public std::exception {
+			private:
+				std::string message ;
 			public:
-				std::string nick ;
-				NoSuchNick(std::string nick) : nick(nick) {}
+				NoSuchNick(std::string nick) {
+					this->message = ":Internet_Relay_Chat 401 %client% " + nick + " :No such nick/channel" ;
+				}
 				virtual ~NoSuchNick() throw() {}
 
-				virtual const char *what() const throw() { return ":Internet_Relay_Chat 401 %client% %nick% :No such nick/channel"; };
+				virtual const char *what() const throw() { return this->message.c_str() ; };
 		};
 
 		/// @brief Indicates that the given server name does not exist. The text used in the last param of this message may vary.
@@ -22,12 +25,15 @@ class IrcException {
 
 		/// @brief Indicates that no channel can be found for the supplied channel name. The text used in the last param of this message may vary.
 		class NoSuchChannel : public std::exception {
+			private:
+				std::string message ;
 			public:
-				std::string channel ;
-				NoSuchChannel(std::string channel) : channel(channel) {}
+				NoSuchChannel(std::string channel) {
+					this->message = ":Internet_Relay_Chat 403 %client% " + channel + " :No such channel" ;
+				}
 				virtual ~NoSuchChannel() throw() {}
 			
-				virtual const char *what() const throw() { return ":Internet_Relay_Chat 403 %client% %channel% :No such channel"; };
+				virtual const char *what() const throw() { return this->message.c_str() ; };
 		};
 
 		/// @brief Returned by the PRIVMSG command to indicate the message wasn’t delivered because there was no text to send.

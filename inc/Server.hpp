@@ -2,6 +2,8 @@
 
 #include "Channel.hpp"
 #include "User.hpp"
+#include "Errors.hpp"
+#include "Utils.hpp"
 
 class Channel ;
 class User ;
