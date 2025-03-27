@@ -17,12 +17,6 @@ class IrcException {
 				virtual const char *what() const throw() { return this->message.c_str() ; };
 		};
 
-		/// @brief Indicates that the given server name does not exist. The text used in the last param of this message may vary.
-		class NoSuchServer : public std::exception {
-			public:
-				virtual const char *what() const throw() { return ":Internet_Relay_Chat 402 %client% %servername% :No such server"; };
-		};
-
 		/// @brief Indicates that no channel can be found for the supplied channel name. The text used in the last param of this message may vary.
 		class NoSuchChannel : public std::exception {
 			private:
@@ -62,8 +56,15 @@ class IrcException {
 
 		/// @brief Indicates that the PRIVMSG / NOTICE could not be delivered to <channel>. The text used in the last param of this message may vary. This is generally sent in response to channel modes, such as a channel being moderated and the client not having permission to speak on the channel, or not being joined to a channel with the no external messages mode set.
 		class CannotSendToChan : public std::exception {
+			private:
+				std::string message ;
 			public:
-				virtual const char *what() const throw() { return ":Internet_Relay_Chat 404 %client% %channel% :Cannot send to channel"; };
+				CannotSendToChan(std::string channel) {
+					this->message = ":Internet_Relay_Chat 404 %client% " + channel + " :Cannot send to channel" ;
+				}
+				virtual ~CannotSendToChan() throw() {}
+			
+				virtual const char *what() const throw() { return this->message.c_str() ; };
 		};
 
 		/// @brief Indicates that the JOIN command failed because the client has joined their maximum number of channels. The text used in the last param of this message may vary.

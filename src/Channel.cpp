@@ -79,3 +79,11 @@ void Channel::join(const User *user, const std::string &password) {
 	this->server.RPL_NAMREPLY(user, *this) ;
 	this->server.RPL_ENDOFNAMES(user, *this) ;
 }
+
+void	Channel::sendMsg(const User *user, const std::string &text) {
+	if (this->users.find(user) == this->users.end())
+		throw IrcException::CannotSendToChan(this->getName()) ;
+	
+	(void) text ;
+	// TODO: Send the text...
+}

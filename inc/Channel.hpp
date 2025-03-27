@@ -53,5 +53,7 @@ class Channel {
 
 		void	join(const User *user, const std::string &password) ;
 
+		void	sendMsg(const User *user, const std::string &text) ;
+
 		// TODO: Method LEAVE
 } ;
