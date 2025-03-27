@@ -153,7 +153,7 @@ void Server::acceptClient() {
 }
 
 // TODO: Remove user from channels variables
-void	Server::closeClient(int fd, const std::string &reason) {
+void	Server::closeClient(int fd) {
 	std::cout << "Client " << fd << " disconnected." << std::endl;
 
 	epoll_ctl(this->epollFd, EPOLL_CTL_DEL, fd, NULL);
@@ -249,7 +249,46 @@ void	Server::processMsg(int fd) {
 				// this->PART(user, message.substr(std::strlen(MSG_CLI_PART))) ;
 			}
 			else if (std::strncmp(message.c_str(), MSG_CLI_PRIVMSG, std::strlen(MSG_CLI_PRIVMSG)) == 0) {
-				// this->PRIVMSG(user, message.substr(std::strlen(MSG_CLI_PRIVMSG))) ;
+				try {
+					std::size_t colon_pos = message.find(':') ;
+
+					std::string text ;
+					if (colon_pos == std::string::npos)
+						throw IrcException::NoTextToSend() ;
+					else
+						text = trim(message.substr(colon_pos + 1)) ;
+					if (text.empty())
+						throw IrcException::NoTextToSend() ;
+					
+					std::vector<std::string> targets ;
+					std::stringstream ss(message.substr(std::strlen(MSG_CLI_PRIVMSG), colon_pos - std::strlen(MSG_CLI_PRIVMSG))) ;
+					std::string tmp ;
+					while (ss >> tmp)
+						targets.push_back(tmp) ;
+				
+					this->PRIVMSG(user, targets, text) ;
+				
+				} catch(const IrcException::NoSuchNick& e) {
+					std::string except(e.what());
+					replaceAll(except, "%client%", user->getNickname()) ;
+					replaceAll(except, "%nick%", e.nick) ;
+					try {
+						this->sendMsg(fd, except) ;
+					} catch (const std::exception &ex) {}
+				} catch(const IrcException::NoSuchChannel& e) {
+					std::string except(e.what());
+					replaceAll(except, "%client%", user->getNickname()) ;
+					replaceAll(except, "%channel%", e.channel) ;
+					try {
+						this->sendMsg(fd, except) ;
+					} catch (const std::exception &ex) {}
+				} catch(const std::exception& e) {
+					std::string except(e.what());
+					replaceAll(except, "%client%", user->getNickname()) ;
+					try {
+						this->sendMsg(fd, except) ;
+					} catch (const std::exception &ex) {}
+				}
 			}
 			else if (std::strncmp(message.c_str(), MSG_CLI_TOPIC, std::strlen(MSG_CLI_TOPIC)) == 0) {
 				// this->TOPIC(user, message.substr(std::strlen(MSG_CLI_TOPIC))) ;
@@ -306,11 +345,20 @@ User *Server::getUserByFd(int fd) const {
 
 Channel *Server::getChannel(const std::string &channelName)
 {
-	std::map<std::string, Channel>::iterator it = channels.find(channelName);
+	std::map<std::string, Channel>::iterator it = this->channels.find(channelName);
 
 	if (it != channels.end())
 	{
 		return &(it->second);
+	}
+	return NULL;
+}
+
+User *Server::getUser(const std::string &userName)
+{
+	for (std::map<int, User *>::iterator it = this->users.begin(); it != this->users.end(); it++) {
+		if ((*it).second->getNickname() == userName)
+			return (*it).second ;
 	}
 	return NULL;
 }

@@ -7,6 +7,10 @@ class IrcException {
 		/// @brief Indicates that no client can be found for the supplied nickname. The text used in the last param of this message may vary.
 		class NoSuchNick : public std::exception {
 			public:
+				std::string nick ;
+				NoSuchNick(std::string nick) : nick(nick) {}
+				virtual ~NoSuchNick() throw() {}
+
 				virtual const char *what() const throw() { return ":Internet_Relay_Chat 401 %client% %nick% :No such nick/channel"; };
 		};
 
@@ -19,6 +23,10 @@ class IrcException {
 		/// @brief Indicates that no channel can be found for the supplied channel name. The text used in the last param of this message may vary.
 		class NoSuchChannel : public std::exception {
 			public:
+				std::string channel ;
+				NoSuchChannel(std::string channel) : channel(channel) {}
+				virtual ~NoSuchChannel() throw() {}
+			
 				virtual const char *what() const throw() { return ":Internet_Relay_Chat 403 %client% %channel% :No such channel"; };
 		};
 

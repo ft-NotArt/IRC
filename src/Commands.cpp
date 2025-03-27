@@ -5,7 +5,7 @@
 void	Server::QUIT(const User *client, const std::string &reason, bool requested) {
 	this->MSG_ERROR(client, reason) ;
 
-	this->closeClient(client->getFd(), reason) ;
+	this->closeClient(client->getFd()) ;
 
 	(void) requested ;
 	// TODO send quit msg to every channels
@@ -75,27 +75,27 @@ void	Server::QUIT(const User *client, const std::string &reason, bool requested)
 
 // }
 
-// void Server::PRIVMSG(const User *client, const std::vector<std::string> args)
-// {
-// 	(void) client;
-// 	std::stringstream splitted(msg);
-// 	std::string args;
+void Server::PRIVMSG(const User *client, const std::vector<std::string> targets, std::string text)
+{
+	for (std::vector<std::string>::const_iterator it = targets.begin(); it != targets.end(); it++) {
+		if ((*it)[0] == '#') {
+			if (!this->getChannel(*it))
+				throw IrcException::NoSuchChannel(*it) ;
+		} else {
+			if (!this->getUser(*it))
+				throw IrcException::NoSuchNick(*it) ;
+		}
+	}
 
-// 	while (splitted >> args)
-// 	{
-// 		std::cout << args << std::endl;
-// 	}
-
-
-
-	// char *splitted = strtok(args, " ");
-
-	// if (args.empty())
-	// {
-	// 	throw(IrcException::NeedMoreParams());
-	// }
-	// if (args.size() > 2)
-	// {
-	// 	// maybe handle for too many params
-	// }
-// }
+	for (std::vector<std::string>::const_iterator it = targets.begin(); it != targets.end(); it++) {
+		if ((*it)[0] == '#') {
+			try {
+				this->getChannel(*it)->sendMsg(client, text) ;
+			} catch(const std::exception& e) {
+				throw e ;
+			}
+		} else {
+			this->sendMsg(this->getUser(*it)->getFd(), text) ;
+		}
+	}
+}

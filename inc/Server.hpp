@@ -8,11 +8,10 @@ class User ;
 
 #include <string>
 #include <sstream>
-#include <unistd.h>
+#include <iostream>
 #include <vector>
 #include <map>
-#include <set>
-#include <iostream>
+#include <unistd.h>
 #include <cstdlib>
 #include <cstring>
 #include <cerrno>
@@ -52,7 +51,7 @@ class Server {
 		int							epollFd ;
 		epoll_event					event, events[MAX_EVENTS] ;
 		std::map<int, std::string>	clientBuffers ;
-		std::map<std::string, Channel>	channels ;
+		std::map<std::string, Channel>	channels ; // Should be Channel *
 		std::map<int, User *>		users ;
 
 	public:
@@ -65,6 +64,7 @@ class Server {
 		int			 						getEpollFd()								const	{ return this->epollFd ; } ;
 		User								*getUserByFd(int fd)						const	;
 		Channel								*getChannel(const std::string &channelName)			;
+		User								*getUser(const std::string &userName)			;
 
 		void	createSocket(void) ;
 		void	createEpoll(void) ;
@@ -73,14 +73,14 @@ class Server {
 		void 	run(void) ;
 
 		void	acceptClient() ;
-		void	closeClient(int fd, const std::string &reason) ;
+		void	closeClient(int fd) ;
 		void	receiveMsg(int fd) ;
 		void	processMsg(int fd) ;
 		void 	sendMsg(int fd, std::string msg) const ;
 
 		// Commands
 		void	QUIT(const User *client, const std::string &reason, bool requested);
-		void 	PRIVMSG(const User *client, const std::vector<std::string> args);
+		void 	PRIVMSG(const User *client, const std::vector<std::string> targets, std::string text);
 		void	INVITE(const User *client, const std::vector<std::string> args);
 		void	KICK(const User *client, const std::vector<std::string> args);
 		void	MODE(const User *client, const std::vector<std::string> args);
