@@ -2,6 +2,7 @@
 
 #include "Server.hpp"
 #include "Errors.hpp"
+#include "Utils.hpp"
 
 /* Temp */
 #define GREEN "\e[1;32m"
@@ -153,11 +154,7 @@ void Server::acceptClient() {
 
 // TODO: Remove user from channels variables
 void	Server::closeClient(int fd, const std::string &reason) {
-	User *user = this->getUserByFd(fd) ;
-
 	std::cout << "Client " << fd << " disconnected." << std::endl;
-
-	this->MSG_ERROR(user, reason) ;
 
 	epoll_ctl(this->epollFd, EPOLL_CTL_DEL, fd, NULL);
 	close(fd);
@@ -173,11 +170,11 @@ void	Server::receiveMsg(int fd) {
 
 	if (readBytes < 0) {
 		std::cerr << "read error on fd " << fd << ": " << strerror(errno) << std::endl;
-		this->closeClient(fd, "read error");
+		this->QUIT(this->getUserByFd(fd), "read error", false);
 		return;
 	}
 	if (readBytes == 0) {
-		// this->closeClient(fd); // TODO: Should we really close ?
+		this->QUIT(this->getUserByFd(fd), "test", false); // FIXME: Why should we close here ? Prolly will be handled by QUIT
 		return;
 	}
 
@@ -233,7 +230,17 @@ void	Server::processMsg(int fd) {
 				this->MSG_PONG(user, message.substr(std::strlen(MSG_CLI_PING))) ;
 			}
 			else if (std::strncmp(message.c_str(), MSG_CLI_QUIT, std::strlen(MSG_CLI_QUIT)) == 0) {
-				// this->QUIT(user, message.substr(std::strlen(MSG_CLI_QUIT))) ;
+				std::size_t colon_pos = message.find(':') ;
+			
+				std::string reason ;
+				if (colon_pos == std::string::npos)
+					reason = "no reason" ;
+				else
+					reason = trim(message.substr(colon_pos + 1)) ;
+				if (reason.empty())
+					reason = "no reason" ;
+
+				this->QUIT(user, reason, true) ;
 			}
 			else if (std::strncmp(message.c_str(), MSG_CLI_JOIN, std::strlen(MSG_CLI_JOIN)) == 0) {
 				// this->JOIN(user, message.substr(std::strlen(MSG_CLI_JOIN))) ;
@@ -242,7 +249,7 @@ void	Server::processMsg(int fd) {
 				// this->PART(user, message.substr(std::strlen(MSG_CLI_PART))) ;
 			}
 			else if (std::strncmp(message.c_str(), MSG_CLI_PRIVMSG, std::strlen(MSG_CLI_PRIVMSG)) == 0) {
-				this->PRIVMSG(user, message.substr(std::strlen(MSG_CLI_PRIVMSG))) ;
+				// this->PRIVMSG(user, message.substr(std::strlen(MSG_CLI_PRIVMSG))) ;
 			}
 			else if (std::strncmp(message.c_str(), MSG_CLI_TOPIC, std::strlen(MSG_CLI_TOPIC)) == 0) {
 				// this->TOPIC(user, message.substr(std::strlen(MSG_CLI_TOPIC))) ;
@@ -268,7 +275,7 @@ void	Server::processMsg(int fd) {
 					this->sendMsg(fd, except) ;
 				} catch (const std::exception &ex) {}
 			}
-			this->closeClient(fd, "jsp gros on se chie dessus") ;
+			// this->closeClient(fd, "jsp gros on se chie dessus") ;
 		}
 	}
 }

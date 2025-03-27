@@ -1,20 +1,20 @@
 #include "Server.hpp"
 #include "Errors.hpp"
 #include "Channel.hpp"
-#include "Utils.hpp"
 
-void Server::QUIT(const User *client, const std::string &msg) {
-	(void) client ;
+void	Server::QUIT(const User *client, const std::string &reason, bool requested) {
+	this->MSG_ERROR(client, reason) ;
 
-	std::string reason(trim(msg)) ;
+	this->closeClient(client->getFd(), reason) ;
 
-	// TODO quit every channels
+	(void) requested ;
+	// TODO send quit msg to every channels
 }
 
-void Server::INVITE(const User *client, const std::string &args)
-{
-	(void) client;
-	(void) args ;
+// void Server::INVITE(const User *client, const std::vector<std::string> args)
+// {
+// 	(void) client;
+// 	(void) args ;
 
 	// std::string target = args.at(0);
 	// std::string channel = args.at(1);
@@ -24,21 +24,21 @@ void Server::INVITE(const User *client, const std::string &args)
 	// 	throw(IrcException::NoSuchChannel());
 	// }
 
-// 	// Check if client is in the channel or not ?
+	// Check if client is in the channel or not ?
 
-// 	// Find target fd by name and let know the server if target is already in channel and if user does exist maybe in the order
-}
+	// Find target fd by name and let know the server if target is already in channel and if user does exist maybe in the order
+// }
 
-void Server::MODE(const User *client, const std::string &args)
-{
-	(void) client;
-	(void) args;
-}
+// void Server::MODE(const User *client, const std::vector<std::string> args)
+// {
+// 	(void) client;
+// 	(void) args;
+// }
 
-void Server::TOPIC(const User *client, const std::string &topic)
-{
-	(void) client;
-	(void) topic;
+// void Server::TOPIC(const User *client, const std::vector<std::string> args)
+// {
+// 	(void) client;
+// 	(void) topic;
 	// if (args.empty())
 	// {
 	// 	throw(IrcException::NeedMoreParams());
@@ -73,18 +73,18 @@ void Server::TOPIC(const User *client, const std::string &topic)
 	// channel->setTopic(args.at(0));
 	// // maybe inform all users of channels that TOPIC has been changed
 
-}
+// }
 
-void Server::PRIVMSG(const User *client, const std::string &msg)
-{
-	(void) client;
-	std::stringstream splitted(msg);
-	std::string args;
+// void Server::PRIVMSG(const User *client, const std::vector<std::string> args)
+// {
+// 	(void) client;
+// 	std::stringstream splitted(msg);
+// 	std::string args;
 
-	while (splitted >> args)
-	{
-		std::cout << args << std::endl;
-	}
+// 	while (splitted >> args)
+// 	{
+// 		std::cout << args << std::endl;
+// 	}
 
 
 
@@ -98,4 +98,4 @@ void Server::PRIVMSG(const User *client, const std::string &msg)
 	// {
 	// 	// maybe handle for too many params
 	// }
-}
+// }
