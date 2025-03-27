@@ -79,7 +79,7 @@ class IrcException {
 		/// @brief Returned when a NICK command cannot be successfully completed as the desired nickname is already in use on the network. The text used in the last param of this message may vary.
 		class NicknameInUseException : public std::exception {
 			public:
-				virtual const char *what() const throw() { return ":Internet_Relay_Chat 432 %client% %nick% :Nickname is already in use"; };
+				virtual const char *what() const throw() { return ":Internet_Relay_Chat 433 %client% %nick% :Nickname is already in use"; };
 		};
 
 		/// @brief Returned when a client tries to perform a channel+nick affecting command, when the nick isn’t joined to the channel (for example, MODE #channel +o nick).
