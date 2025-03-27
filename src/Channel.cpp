@@ -13,6 +13,7 @@ Channel::Channel(const std::string &name, const Server &server) : server(server)
 	this->topic_change.second = std::time(NULL) ;
 	this->max_users = -1 ;
 	this->invite_only = false ;
+	this->topic_restrict = false ;
 }
 
 
