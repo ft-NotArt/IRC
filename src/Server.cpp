@@ -233,7 +233,40 @@ void	Server::processMsg(int fd) {
 				this->QUIT(user, reason, true) ;
 			}
 			else if (std::strncmp(message.c_str(), MSG_CLI_JOIN, std::strlen(MSG_CLI_JOIN)) == 0) {
-				// this->JOIN(user, message.substr(std::strlen(MSG_CLI_JOIN))) ;
+				try {
+					std::map<std::string, std::string> args ;
+				
+					std::stringstream ss(message.substr(std::strlen(MSG_CLI_JOIN))) ;
+					std::string tmp ;
+
+					ss >> tmp ;
+					if (tmp.empty())
+						throw IrcException::NeedMoreParams() ;
+					std::stringstream channels(tmp) ;
+				
+					ss >> tmp ;
+					std::stringstream keys(tmp) ;
+
+					std::string channel ;
+					std::string key ;
+					while (std::getline(channels, channel, ',')) {
+						if (channel[0] != '#')
+							throw IrcException::BadChanMask(channel) ;
+						key = "" ; // Reset to ensure we don't keep the key from before
+						std::getline(keys, key, ',') ;
+						args.insert( std::pair<std::string, std::string>(channel, key)) ;
+					}
+
+					this->JOIN(user, args) ;
+				} catch(const std::exception& e) {
+					std::string except(e.what());
+					replaceAll(except, "%client%", user->getNickname()) ;
+					replaceAll(except, "%command%", MSG_CLI_JOIN) ;
+					try {
+						this->sendMsg(fd, except) ;
+					} catch (const std::exception &ex) {}
+				}
+				
 			}
 			else if (std::strncmp(message.c_str(), MSG_CLI_PART, std::strlen(MSG_CLI_PART)) == 0) {
 				// this->PART(user, message.substr(std::strlen(MSG_CLI_PART))) ;

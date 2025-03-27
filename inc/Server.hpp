@@ -35,6 +35,8 @@ class User ;
 #define MSG_CLI_NICK		"NICK "
 #define MSG_CLI_USER		"USER "
 
+// FIXME: the space at the end prevent us from detecting the msg as a cmd if no args (ex: "JOIN", no spaces)
+
 #define MSG_CLI_PING		"PING "
 #define MSG_CLI_QUIT		"QUIT "
 #define MSG_CLI_JOIN		"JOIN "
@@ -83,6 +85,7 @@ class Server {
 		// Commands
 		void	QUIT(const User *client, const std::string &reason, bool requested);
 		void 	PRIVMSG(const User *client, const std::vector<std::string> targets, std::string text);
+		void 	JOIN(const User *client, const std::map<std::string, std::string> args);
 		void	INVITE(const User *client, const std::vector<std::string> args);
 		void	KICK(const User *client, const std::vector<std::string> args);
 		void	MODE(const User *client, const std::vector<std::string> args);

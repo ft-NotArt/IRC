@@ -183,8 +183,15 @@ class IrcException {
 
 		/// @brief Indicates the supplied channel name is not a valid. This is similar to, but stronger than, ERR_NOSUCHCHANNEL (403), which indicates that the channel does not exist, but that it may be a valid name. The text used in the last param of this message may vary.
 		class BadChanMask : public std::exception {
+			private:
+				std::string message ;
 			public:
-				virtual const char *what() const throw() { return ":Internet_Relay_Chat 476 %channel% :Bad Channel Mask"; };
+				BadChanMask(std::string channel) {
+					this->message = ":Internet_Relay_Chat 476 " + channel + " :Bad Channel Mask" ;
+				}
+				virtual ~BadChanMask() throw() {}
+			
+				virtual const char *what() const throw() { return this->message.c_str() ; };
 		};
 
 		/// @brief Indicates that the command failed because the user is not an IRC operator. The text used in the last param of this message may vary.

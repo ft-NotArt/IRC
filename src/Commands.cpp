@@ -9,6 +9,18 @@ void	Server::QUIT(const User *client, const std::string &reason, bool requested)
 	// TODO send quit msg to every channels
 }
 
+void	Server::JOIN(const User *client, const std::map<std::string, std::string> args) {
+
+	for (std::map<std::string, std::string>::const_iterator it = args.begin(); it != args.end(); it++) {
+		if (!this->getChannel((*it).first))
+			throw IrcException::NoSuchChannel((*it).first) ;
+	}
+
+	(void) client ;
+	(void) args ;
+	// TODO: channel.join or create it
+}
+
 // void Server::INVITE(const User *client, const std::vector<std::string> args)
 // {
 // 	(void) client;
