@@ -194,6 +194,19 @@ class IrcException {
 				virtual const char *what() const throw() { return this->message.c_str() ; };
 		};
 
+		/// @brief Indicates the supplied channel name is not valid.
+		class BadChanName : public std::exception {
+			private:
+				std::string message ;
+			public:
+				BadChanName(std::string channel) {
+					this->message = ":Internet_Relay_Chat 479 %client% " + (channel.empty() ? "\"\"" : channel) + " :Illegal channel name" ;
+				}
+				virtual ~BadChanName() throw() {}
+			
+				virtual const char *what() const throw() { return this->message.c_str() ; };
+		};
+
 		/// @brief Indicates that the command failed because the user is not an IRC operator. The text used in the last param of this message may vary.
 		class NoPrivileges : public std::exception {
 			public:
