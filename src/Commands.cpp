@@ -10,16 +10,13 @@ void	Server::QUIT(const User *client, const std::string &reason, bool requested)
 }
 
 void	Server::JOIN(const User *client, const std::string &channel, const std::string &key) {
-
-	// for (std::map<std::string, std::string>::const_iterator it = args.begin(); it != args.end(); it++) {
-	// 	if (!this->getChannel((*it).first))
-	// 		throw IrcException::NoSuchChannel((*it).first) ;
-	// }
-
-	(void) client ;
-	(void) channel ;
-	(void) key ;
-	// TODO: channel.join or create it
+	Channel *chan = this->getChannel(channel) ;
+	if (!chan) { // Creating the channel (making the client operator)
+		Channel *newChan = new Channel(channel, *this, client) ;
+		this->channels.insert(std::pair<std::string, Channel *>(channel, newChan)) ;
+	} else {
+		chan->join(client, key) ;
+	}
 }
 
 // void Server::INVITE(const User *client, const std::vector<std::string> args)
