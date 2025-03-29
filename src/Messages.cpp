@@ -5,7 +5,7 @@
 
 /* Messages */
 
-void	Server::MSG_CAP_LS(const User *client) {
+void	Server::MSG_CAP_LS(const User *client) const {
 	std::string msg(":") ;
 
 	msg += client->getNickname() ;
@@ -16,7 +16,7 @@ void	Server::MSG_CAP_LS(const User *client) {
 	this->sendMsg(client->getFd(), msg) ;
 }
 
-void	Server::MSG_CAP_ACK(const User *client, const std::string &request_capa) {
+void	Server::MSG_CAP_ACK(const User *client, const std::string &request_capa) const {
 	std::string msg(":") ;
 
 	msg += client->getNickname() ;
@@ -29,7 +29,7 @@ void	Server::MSG_CAP_ACK(const User *client, const std::string &request_capa) {
 	this->sendMsg(client->getFd(), msg) ;
 }
 
-void	Server::MSG_PONG(const User *client, const std::string &token) {
+void	Server::MSG_PONG(const User *client, const std::string &token) const {
 	std::string msg(":") ;
 
 	msg += client->getNickname() ;
@@ -44,7 +44,7 @@ void	Server::MSG_PONG(const User *client, const std::string &token) {
 	this->sendMsg(client->getFd(), msg) ;
 }
 
-void	Server::MSG_INVITE(const User *client, const User *invited, const Channel &channel) {
+void	Server::MSG_INVITE(const User *client, const User *invited, const Channel &channel) const {
 	std::string msg(":") ;
 
 	msg += client->getNickname() ;
@@ -59,7 +59,7 @@ void	Server::MSG_INVITE(const User *client, const User *invited, const Channel &
 	this->sendMsg(invited->getFd(), msg) ;
 }
 
-void	Server::MSG_ERROR(const User *client, const std::string &reason) {
+void	Server::MSG_ERROR(const User *client, const std::string &reason) const {
 	std::string msg(":") ;
 
 	msg += client->getNickname() ;
@@ -68,4 +68,15 @@ void	Server::MSG_ERROR(const User *client, const std::string &reason) {
 	msg += reason ;
 
 	this->sendMsg(client->getFd(), msg) ;
+}
+
+void	Server::MSG_JOIN(const User *client, const Channel &channel) const {
+	std::string msg(":") ;
+
+	msg += client->getNickname() ;
+
+	msg += " JOIN " ;
+	msg += channel.getName() ;
+
+	channel.sendMsg(client, msg) ;
 }

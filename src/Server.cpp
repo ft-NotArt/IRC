@@ -363,13 +363,13 @@ User *Server::getUserByFd(int fd) const {
 
 Channel *Server::getChannel(const std::string &channelName)
 {
-	std::map<std::string, Channel>::iterator it = this->channels.find(channelName);
+	std::map<std::string, Channel *>::iterator it = this->channels.find(channelName);
 
 	if (it != channels.end())
 	{
-		return &(it->second);
+		return it->second ;
 	}
-	return NULL;
+	return NULL ;
 }
 
 User *Server::getUser(const std::string &userName)

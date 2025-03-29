@@ -55,7 +55,7 @@ class Server {
 		int							epollFd ;
 		epoll_event					event, events[MAX_EVENTS] ;
 		std::map<int, std::string>	clientBuffers ;
-		std::map<std::string, Channel>	channels ; // Should be Channel *
+		std::map<std::string, Channel *>	channels ;
 		std::map<int, User *>		users ;
 
 	public:
@@ -98,12 +98,13 @@ class Server {
 		void	RPL_TOPIC(const User *client, const Channel &channel)																const ;
 		void	RPL_NOTOPIC(const User *client, const Channel &channel)																const ;
 		void	RPL_TOPICWHOTIME(const User *client, const Channel &channel)														const ;
-		void	RPL_CHANNELMODEIS(const User *client, const Channel &channel, const std::string modes, const std::string params) 	const ;
+		void	RPL_CHANNELMODEIS(const User *client, const Channel &channel, const std::string modes, const std::string params)	const ;
 		void	RPL_YOUREOPER(const User *client)																					const ;
 
-		void	MSG_CAP_LS(const User *client) ;
-		void	MSG_CAP_ACK(const User *client, const std::string &request_capa) ;
-		void	MSG_PONG(const User *client, const std::string &token) ;
-		void	MSG_INVITE(const User *client, const User *invited, const Channel &channel) ;
-		void	MSG_ERROR(const User *client, const std::string &reason) ;
+		void	MSG_CAP_LS(const User *client)												const ;
+		void	MSG_CAP_ACK(const User *client, const std::string &request_capa)			const ;
+		void	MSG_PONG(const User *client, const std::string &token)						const ;
+		void	MSG_INVITE(const User *client, const User *invited, const Channel &channel)	const ;
+		void	MSG_ERROR(const User *client, const std::string &reason)					const ;
+		void	MSG_JOIN(const User *client, const Channel &channel)						const ;
 } ;
