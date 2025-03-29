@@ -234,8 +234,6 @@ void	Server::processMsg(int fd) {
 			}
 			else if (std::strncmp(message.c_str(), MSG_CLI_JOIN, std::strlen(MSG_CLI_JOIN)) == 0) {
 				try {
-					std::map<std::string, std::string> args ;
-				
 					std::stringstream ss(message.substr(std::strlen(MSG_CLI_JOIN))) ;
 					std::string tmp ;
 
@@ -250,14 +248,22 @@ void	Server::processMsg(int fd) {
 					std::string channel ;
 					std::string key ;
 					while (std::getline(channels, channel, ',')) {
-						if (channel[0] != '#')
-							throw IrcException::BadChanMask(channel) ;
 						key = "" ; // Reset to ensure we don't keep the key from before
 						std::getline(keys, key, ',') ;
-						args.insert( std::pair<std::string, std::string>(channel, key)) ;
+						try {
+							if (channel[0] != '#')
+								throw IrcException::BadChanMask(channel) ;
+							
+							this->JOIN(user, channel, key) ;
+						} catch(const std::exception& e) {
+							std::string except(e.what());
+							replaceAll(except, "%client%", user->getNickname()) ;
+							replaceAll(except, "%command%", MSG_CLI_JOIN) ;
+							try {
+								this->sendMsg(fd, except) ;
+							} catch (const std::exception &ex) {}
+						}
 					}
-
-					this->JOIN(user, args) ;
 				} catch(const std::exception& e) {
 					std::string except(e.what());
 					replaceAll(except, "%client%", user->getNickname()) ;
@@ -266,7 +272,6 @@ void	Server::processMsg(int fd) {
 						this->sendMsg(fd, except) ;
 					} catch (const std::exception &ex) {}
 				}
-				
 			}
 			else if (std::strncmp(message.c_str(), MSG_CLI_PART, std::strlen(MSG_CLI_PART)) == 0) {
 				// this->PART(user, message.substr(std::strlen(MSG_CLI_PART))) ;
@@ -341,7 +346,7 @@ void	Server::sendMsg(int fd, std::string msg) const {
 	std::cout << BLUE << "[SRV->CLI[" << fd << "]] " << debugShowInvisibleChar(msg) << "\e[0m" << std::endl;
 	if (send(fd, msg.c_str(), msg.size(), 0) < 0) {
 		std::cerr << "send error: " << strerror(errno) << std::endl;
-		// TODO: Change this to better exception
+		// TODO: Change this to better exception | Think to change every catch after use of sendMsg when changing the exception it throws
 		throw std::exception() ;
 	}
 }

@@ -85,7 +85,7 @@ class Server {
 		// Commands
 		void	QUIT(const User *client, const std::string &reason, bool requested);
 		void 	PRIVMSG(const User *client, const std::vector<std::string> targets, std::string text);
-		void 	JOIN(const User *client, const std::map<std::string, std::string> args);
+		void 	JOIN(const User *client, const std::string &channel, const std::string &key);
 		void	INVITE(const User *client, const std::vector<std::string> args);
 		void	KICK(const User *client, const std::vector<std::string> args);
 		void	MODE(const User *client, const std::vector<std::string> args);
