@@ -30,30 +30,6 @@ class IrcException {
 				virtual const char *what() const throw() { return this->message.c_str() ; };
 		};
 
-		/// @brief Returned by the PRIVMSG command to indicate the message wasn’t delivered because there was no text to send.
-		class NoTextToSend : public std::exception {
-			public:
-				virtual const char *what() const throw() { return ":Internet_Relay_Chat 412 %client% :No text to send"; };
-		};
-
-		/// @brief Indicates a given line does not follow the specified size limits (512 bytes for the main section, 4094 or 8191 bytes for the tag section).
-		class InputTooLong : public std::exception {
-			public:
-				virtual const char *what() const throw() { return ":Internet_Relay_Chat 417 %client% :Input line was too long"; };
-		};
-
-		/// @brief Sent to a registered client to indicate that the command they sent isn’t known by the server. The text used in the last param of this message may vary.
-		class UnknownCommand : public std::exception {
-			public:
-				virtual const char *what() const throw() { return ":Internet_Relay_Chat 421 %client% %command% :Unknown command"; };
-		};
-
-		/// @brief Indicates that the Message of the Day file does not exist or could not be found. The text used in the last param of this message may vary.
-		class NoMotd : public std::exception {
-			public:
-				virtual const char *what() const throw() { return ":Internet_Relay_Chat 422 %client% :MOTD File is missing"; };
-		};
-
 		/// @brief Indicates that the PRIVMSG / NOTICE could not be delivered to <channel>. The text used in the last param of this message may vary. This is generally sent in response to channel modes, such as a channel being moderated and the client not having permission to speak on the channel, or not being joined to a channel with the no external messages mode set.
 		class CannotSendToChan : public std::exception {
 			private:
@@ -83,6 +59,30 @@ class IrcException {
 		class NoRecipient : public std::exception {
 			public:
 				virtual const char *what() const throw() { return ":Internet_Relay_Chat 411 %client% :No recipient given (%command%)"; };
+		};
+
+		/// @brief Returned by the PRIVMSG command to indicate the message wasn’t delivered because there was no text to send.
+		class NoTextToSend : public std::exception {
+			public:
+				virtual const char *what() const throw() { return ":Internet_Relay_Chat 412 %client% :No text to send"; };
+		};
+
+		/// @brief Indicates a given line does not follow the specified size limits (512 bytes for the main section, 4094 or 8191 bytes for the tag section).
+		class InputTooLong : public std::exception {
+			public:
+				virtual const char *what() const throw() { return ":Internet_Relay_Chat 417 %client% :Input line was too long"; };
+		};
+
+		/// @brief Sent to a registered client to indicate that the command they sent isn’t known by the server. The text used in the last param of this message may vary.
+		class UnknownCommand : public std::exception {
+			public:
+				virtual const char *what() const throw() { return ":Internet_Relay_Chat 421 %client% %command% :Unknown command"; };
+		};
+
+		/// @brief Indicates that the Message of the Day file does not exist or could not be found. The text used in the last param of this message may vary.
+		class NoMotd : public std::exception {
+			public:
+				virtual const char *what() const throw() { return ":Internet_Relay_Chat 422 %client% :MOTD File is missing"; };
 		};
 
 		/// @brief Returned when a nickname parameter is expected for a command but isn’t given.
