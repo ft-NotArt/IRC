@@ -7,6 +7,13 @@
 /* Constructor */
 
 Channel::Channel(const std::string &name, const Server &server, const User *creator) : server(server), name(name) {
+	if (this->name.empty()
+	||	this->name[0] != '#'
+	||	this->name.find(' ') != std::string::npos
+	||	this->name.find('\a') != std::string::npos
+	||	this->name.find(',') != std::string::npos)
+		throw IrcException::BadChanName(this->name) ;
+
 	this->password = "" ;
 	this->topic = "" ;
 	this->topic_change.first = NULL ;

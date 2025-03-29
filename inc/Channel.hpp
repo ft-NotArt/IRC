@@ -34,8 +34,9 @@ class Channel {
 		bool							topic_restrict ;
 
 	public:
-	// TODO: There should be parsing on channel name (ex. starting with #), idk at which point of the code though
-
+		/***
+		 * @warning Throw exception on invalid name
+		 */
 		Channel(const std::string &name, const Server &server, const User *creator) ;
 
 		const std::string						&getName()			const	{ return this->name ; } ;
