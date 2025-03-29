@@ -36,8 +36,7 @@ class Channel {
 	public:
 	// TODO: There should be parsing on channel name (ex. starting with #), idk at which point of the code though
 
-	// 
-		Channel(const std::string &name, const Server &server) ;
+		Channel(const std::string &name, const Server &server, const User *creator) ;
 
 		const std::string						&getName()			const	{ return this->name ; } ;
 		const std::string						&getPassword()		const	{ return this->password ; } ;
@@ -53,7 +52,7 @@ class Channel {
 
 		void	join(const User *user, const std::string &password) ;
 
-		void	sendMsg(const User *user, const std::string &text) ;
+		void	sendMsg(const User *user, const std::string &text) const ;
 
-		// TODO: Method LEAVE
+		// TODO: Method PART (leave)
 } ;

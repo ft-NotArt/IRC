@@ -6,7 +6,7 @@
 
 /* Constructor */
 
-Channel::Channel(const std::string &name, const Server &server) : server(server), name(name) {
+Channel::Channel(const std::string &name, const Server &server, const User *creator) : server(server), name(name) {
 	this->password = "" ;
 	this->topic = "" ;
 	this->topic_change.first = NULL ;
@@ -14,11 +14,18 @@ Channel::Channel(const std::string &name, const Server &server) : server(server)
 	this->max_users = -1 ;
 	this->invite_only = false ;
 	this->topic_restrict = false ;
+
+	this->join(creator, "") ;
+	this->perms[creator] = OPERATOR ;
 }
 
 
 /* Get */
 
+/**
+ * @brief Used for RPL_NAMREPLY
+ * @return A string containing the names of every members of the channel (with @ before the name for operators)
+ */
 std::string Channel::getUsers() const {
 	std::string res ;
 	for (std::set<const User *>::iterator it = this->users.begin(); it != this->users.end() ; it++) {
@@ -34,15 +41,16 @@ std::string Channel::getUsers() const {
 	return res ;
 }
 
+
 /* Methods */
 
-// TODO Find a way to replace exception messages with the appropriated data (this is not easy as we thinked at the beginnind LOLLLLLLLLLLLLL)
 void Channel::join(const User *user, const std::string &password) {
-
-	if (this->perms.at(user) & BANNED) // try catch the .at
-	{
-		throw(IrcException::BannedFromChan());
-	}
+	try {
+		if (this->perms.at(user) & BANNED)
+			throw(IrcException::BannedFromChan());
+	} catch(const IrcException::BannedFromChan& e) {
+		throw e ;
+	} catch(const std::exception& e) {}
 
 	if (this->invite_only) {
 		try {
@@ -63,12 +71,12 @@ void Channel::join(const User *user, const std::string &password) {
 
 	this->users.insert(user) ;
 	try {
-		this->perms.at(user) &= ~INVITED ;
+		this->perms.at(user) &= ~INVITED ; // If user is known as invited, removes its invited status
 	} catch(const std::exception& e) {
 		this->perms[user] = NORMAL ;
 	}
 
-	// TODO: send JOIN msg
+	this->server.MSG_JOIN(user, *this) ;
 
 	if (this->topic != "") {
 		this->server.RPL_TOPIC(user, *this) ;
@@ -80,7 +88,7 @@ void Channel::join(const User *user, const std::string &password) {
 	this->server.RPL_ENDOFNAMES(user, *this) ;
 }
 
-void	Channel::sendMsg(const User *user, const std::string &text) {
+void	Channel::sendMsg(const User *user, const std::string &text) const {
 	if (this->users.find(user) == this->users.end())
 		throw IrcException::CannotSendToChan(this->getName()) ;
 	
