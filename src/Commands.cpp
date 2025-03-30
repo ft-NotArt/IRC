@@ -37,11 +37,18 @@ void	Server::JOIN(const User *client, const std::string &channel, const std::str
 	// Find target fd by name and let know the server if target is already in channel and if user does exist maybe in the order
 // }
 
-// void Server::MODE(const User *client, const std::vector<std::string> args)
-// {
-// 	(void) client;
-// 	(void) args;
-// }
+void Server::MODE(const User *client, const std::string &channel, const std::vector<std::string> &modesArgs)
+{
+	if (!this->getChannel(channel))
+	{
+		throw IrcException::NoSuchNick(channel);
+	}
+
+
+	(void) client;
+	(void) channel;
+	(void) modesArgs;
+}
 
 // void Server::TOPIC(const User *client, const std::vector<std::string> args)
 // {

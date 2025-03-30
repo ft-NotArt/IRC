@@ -88,7 +88,7 @@ class Server {
 		void 	JOIN(const User *client, const std::string &channel, const std::string &key);
 		void	INVITE(const User *client, const std::vector<std::string> args);
 		void	KICK(const User *client, const std::vector<std::string> args);
-		void	MODE(const User *client, const std::vector<std::string> args);
+		void	MODE(const User *client, const std::string &channel, const std::vector<std::string> &modesArgs);
 		void	TOPIC(const User *client, const std::vector<std::string> args);
 
 		void	RPL_WELCOME(const User *client)																						const ;

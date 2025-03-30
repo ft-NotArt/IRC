@@ -221,7 +221,7 @@ void	Server::processMsg(int fd) {
 			}
 			else if (std::strncmp(message.c_str(), MSG_CLI_QUIT, std::strlen(MSG_CLI_QUIT)) == 0) {
 				std::size_t colon_pos = message.find(':') ;
-			
+
 				std::string reason ;
 				if (colon_pos == std::string::npos)
 					reason = "no reason" ;
@@ -241,7 +241,7 @@ void	Server::processMsg(int fd) {
 					if (tmp.empty())
 						throw IrcException::NeedMoreParams() ;
 					std::stringstream channels(tmp) ;
-				
+
 					ss >> tmp ;
 					std::stringstream keys(tmp) ;
 
@@ -253,7 +253,7 @@ void	Server::processMsg(int fd) {
 						try {
 							if (channel[0] != '#')
 								throw IrcException::BadChanMask(channel) ;
-							
+
 							this->JOIN(user, channel, key) ;
 						} catch(const std::exception& e) {
 							std::string except(e.what());
@@ -287,18 +287,18 @@ void	Server::processMsg(int fd) {
 						text = trim(message.substr(colon_pos + 1)) ;
 					if (text.empty())
 						throw IrcException::NoTextToSend() ;
-					
+
 					std::vector<std::string> targets ;
 					std::stringstream ss(message.substr(std::strlen(MSG_CLI_PRIVMSG), colon_pos - std::strlen(MSG_CLI_PRIVMSG))) ;
 					std::string tmp ;
 					while (ss >> tmp)
 						targets.push_back(tmp) ;
-					
+
 					if (targets.empty())
 						throw IrcException::NoRecipient() ;
-				
+
 					this->PRIVMSG(user, targets, text) ;
-				
+
 				} catch(const std::exception& e) {
 					std::string except(e.what());
 					replaceAll(except, "%client%", user->getNickname()) ;
@@ -315,7 +315,37 @@ void	Server::processMsg(int fd) {
 				// this->KICK(user, message.substr(std::strlen(MSG_CLI_KICK))x) ;
 			}
 			else if (std::strncmp(message.c_str(), MSG_CLI_MODE, std::strlen(MSG_CLI_MODE)) == 0) {
-				// this->MODE(user, message.substr(std::strlen(MSG_CLI_MODE))) ;
+				try
+				{
+					//  TODO handle when /mode only is sent, Irssi is the only one sending the message
+					std::stringstream ss(message.substr(std::strlen(MSG_CLI_MODE)));
+					std::string channel;
+
+					ss >> channel; // The channel target out here
+					if (channel.empty())
+					{
+						throw IrcException::NeedMoreParams();
+					}
+
+					std::vector<std::string> modesArgs;
+					std::string tmp; // Fkin tmp cause we have to operate like this
+
+					while (ss >> tmp)
+					{
+						modesArgs.push_back(tmp);
+					}
+
+					// TODOD if !modesArgs -> Reply channel modes is 324
+					this->MODE(user, channel, modesArgs);
+
+				} catch(const std::exception& e) {
+					std::string except(e.what());
+					replaceAll(except, "%client%", user->getNickname()) ;
+					replaceAll(except, "%command%", MSG_CLI_MODE) ;
+					try {
+						this->sendMsg(fd, except) ;
+					} catch (const std::exception &ex) {}
+				}
 			}
 			else if (std::strncmp(message.c_str(), MSG_CLI_INVITE, std::strlen(MSG_CLI_INVITE)) == 0) {
 				// this->INVITE(user, message.substr(std::strlen(MSG_CLI_INVITE))) ;
