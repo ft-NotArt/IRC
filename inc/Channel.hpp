@@ -47,6 +47,8 @@ class Channel {
 		bool									getTopicRestrict()	const 	{ return this->topic_restrict ; } ;
 		std::string								getUsers()			const	;
 
+		bool									isUserIn(const User *user)	const ;
+
 		void	setPassword(const std::string &password)	{ this->password = password ; } ;
 		void	setTopic(const std::string &topic)			{ this->topic = topic ; } ;
 		void	setMaxUsers(int max_users)					{ this->max_users = max_users ; } ;

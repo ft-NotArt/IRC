@@ -48,6 +48,12 @@ std::string Channel::getUsers() const {
 	return res ;
 }
 
+bool	Channel::isUserIn(const User *user) const {
+	if (this->users.find(user) != this->users.end())
+		return true ;
+	
+	return false ;
+}
 
 /* Methods */
 
