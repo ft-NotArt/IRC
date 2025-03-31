@@ -111,8 +111,15 @@ class IrcException {
 
 		/// @brief Returned when a client tries to perform a channel-affecting command on a channel which the client isn’t a part of.
 		class NotOnChannel : public std::exception {
+			private:
+				std::string message ;
 			public:
-				virtual const char *what() const throw() { return ":Internet_Relay_Chat 442 %client% %channel% :You're not on that channel"; };
+				NotOnChannel(std::string channel) {
+					this->message = ":Internet_Relay_Chat 442 %client% " + channel + " :You're not on that channel" ;
+				}
+				virtual ~NotOnChannel() throw() {}
+			
+				virtual const char *what() const throw() { return this->message.c_str() ; };
 		};
 
 		/// @brief Returned when a client tries to invite <nick> to a channel they’re already joined to.

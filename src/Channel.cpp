@@ -101,8 +101,19 @@ void Channel::join(const User *user, const std::string &password) {
 	this->server.RPL_ENDOFNAMES(user, *this) ;
 }
 
+void	Channel::changeTopic(const User *user, const std::string &topic) {
+	if (!this->isUserIn(user))
+		throw IrcException::NotOnChannel(this->getName()) ;
+	
+	this->topic = topic ;
+	this->topic_change.first = user ;
+	this->topic_change.second = std::time(NULL) ;
+
+	this->server.MSG_TOPIC(user, *this, topic) ;
+}
+
 void	Channel::sendMsg(const User *user, const std::string &text) const {
-	if (this->users.find(user) == this->users.end())
+	if (!this->isUserIn(user))
 		throw IrcException::CannotSendToChan(this->getName()) ;
 	
 	for (std::set<const User *>::iterator it = this->users.begin(); it != this->users.end(); it++) {

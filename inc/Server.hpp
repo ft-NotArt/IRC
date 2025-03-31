@@ -89,7 +89,7 @@ class Server {
 		void	INVITE(const User *client, const std::vector<std::string> args);
 		void	KICK(const User *client, const std::vector<std::string> args);
 		void	MODE(const User *client, const std::string &channel, const std::vector<std::string> &modesArgs);
-		void	TOPIC(const User *client, const std::vector<std::string> args);
+		void	TOPIC(const User *client, const std::string &channel, const std::string &topic, bool modify);
 
 		void	RPL_WELCOME(const User *client)																						const ;
 		void	RPL_NAMREPLY(const User *client, const Channel &channel)															const ;
@@ -101,10 +101,11 @@ class Server {
 		void	RPL_CHANNELMODEIS(const User *client, const Channel &channel, const std::string modes, const std::string params)	const ;
 		void	RPL_YOUREOPER(const User *client)																					const ;
 
-		void	MSG_CAP_LS(const User *client)												const ;
-		void	MSG_CAP_ACK(const User *client, const std::string &request_capa)			const ;
-		void	MSG_PONG(const User *client, const std::string &token)						const ;
-		void	MSG_INVITE(const User *client, const User *invited, const Channel &channel)	const ;
-		void	MSG_ERROR(const User *client, const std::string &reason)					const ;
-		void	MSG_JOIN(const User *client, const Channel &channel)						const ;
+		void	MSG_CAP_LS(const User *client)													const ;
+		void	MSG_CAP_ACK(const User *client, const std::string &request_capa)				const ;
+		void	MSG_PONG(const User *client, const std::string &token)							const ;
+		void	MSG_INVITE(const User *client, const User *invited, const Channel &channel)		const ;
+		void	MSG_ERROR(const User *client, const std::string &reason)						const ;
+		void	MSG_JOIN(const User *client, const Channel &channel)							const ;
+		void	MSG_TOPIC(const User *client, const Channel &channel, const std::string &topic)	const ;
 } ;

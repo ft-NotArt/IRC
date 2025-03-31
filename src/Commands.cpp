@@ -50,48 +50,23 @@ void Server::MODE(const User *client, const std::string &channel, const std::vec
 	(void) modesArgs;
 }
 
-// void Server::TOPIC(const User *client, const std::vector<std::string> args)
-// {
-// 	(void) client;
-// 	(void) topic;
-	// if (args.empty())
-	// {
-	// 	throw(IrcException::NeedMoreParams());
-	// }
+void Server::TOPIC(const User *client, const std::string &channel, const std::string &topic, bool modify) {
+	Channel *chan = this->getChannel(channel) ;
+	if (!chan)
+		throw IrcException::NoSuchChannel(channel) ;
+	
+	if (modify) {
+		chan->changeTopic(client, topic) ;
+	} else {
+		if (chan->getTopic() != "") {
+			this->RPL_TOPIC(client, *chan) ;
+			this->RPL_TOPICWHOTIME(client, *chan) ;
+		} else
+			this->RPL_NOTOPIC(client, *chan) ;
+	}
+}
 
-	// std::string channelName = args.at(0);
-	// Channel *channel = getChannel(channelName);
-
-	// if (!channel) // Tat's mean channel is not found
-	// {
-	// 	throw(IrcException::NoSuchChannel());
-	// }
-
-	// if (args.size() == 1) // That's means we have no TOPIC so we are just retrieving the TOPIC of the channel
-	// {
-	// 	if (channel->getTopic().empty())
-	// 	{
-	// 		RPL_NOTOPIC(client, *channel);
-	// 	}
-	// 	else
-	// 	{
-	// 		RPL_TOPIC(client, *channel);
-	// 	}
-	// 	return ;
-	// }
-
-	// if (channel->getTopicRestriction()) // + Check if user is not operator
-	// {
-	// 	throw(IrcException::ChanoPrivNeeded());
-	// }
-
-	// channel->setTopic(args.at(0));
-	// // maybe inform all users of channels that TOPIC has been changed
-
-// }
-
-void Server::PRIVMSG(const User *client, const std::vector<std::string> targets, std::string text)
-{
+void Server::PRIVMSG(const User *client, const std::vector<std::string> targets, std::string text) {
 	for (std::vector<std::string>::const_iterator it = targets.begin(); it != targets.end(); it++) {
 		if ((*it)[0] == '#') {
 			if (!this->getChannel(*it))

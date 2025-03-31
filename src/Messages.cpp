@@ -80,3 +80,17 @@ void	Server::MSG_JOIN(const User *client, const Channel &channel) const {
 
 	channel.sendMsg(client, msg) ;
 }
+
+void	Server::MSG_TOPIC(const User *client, const Channel &channel, const std::string &topic)	const {
+	std::string msg(":") ;
+
+	msg += client->getNickname() ;
+
+	msg += " TOPIC " ;
+	msg += channel.getName() ;
+
+	msg += " " ;
+	msg += topic ;
+
+	channel.sendMsg(client, msg) ;
+}

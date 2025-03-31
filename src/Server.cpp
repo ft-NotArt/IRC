@@ -309,7 +309,38 @@ void	Server::processMsg(int fd) {
 				}
 			}
 			else if (std::strncmp(message.c_str(), MSG_CLI_TOPIC, std::strlen(MSG_CLI_TOPIC)) == 0) {
-				// this->TOPIC(user, message.substr(std::strlen(MSG_CLI_TOPIC))) ;
+				try {
+					std::size_t colon_pos = message.find(':') ;
+
+					std::string	channel("") ;
+					std::string	topic("") ;
+					bool		modify ;
+					if (colon_pos != std::string::npos) { // A new topic is given
+						channel = trim(message.substr(std::strlen(MSG_CLI_TOPIC), colon_pos)) ;
+						topic = trim(message.substr(colon_pos + 1)) ;
+						modify = true ;
+					}
+					else { // No topic is given, user wants to see actual one
+						channel = trim(message.substr(std::strlen(MSG_CLI_TOPIC))) ;
+						modify = false ;
+					}
+					
+					if (channel.empty())
+						throw IrcException::NeedMoreParams() ;
+					else if (channel[0] != '#')
+						throw IrcException::BadChanMask(channel) ;
+					else if (!this->getChannel(channel))
+						throw IrcException::NoSuchChannel(channel) ;
+					
+					this->TOPIC(user, channel, topic, modify) ;
+				} catch(const std::exception& e) {
+					std::string except(e.what());
+					replaceAll(except, "%client%", user->getNickname()) ;
+					replaceAll(except, "%command%", MSG_CLI_TOPIC) ;
+					try {
+						this->sendMsg(fd, except) ;
+					} catch (const std::exception &ex) {}
+				}
 			}
 			else if (std::strncmp(message.c_str(), MSG_CLI_KICK, std::strlen(MSG_CLI_KICK)) == 0) {
 				// this->KICK(user, message.substr(std::strlen(MSG_CLI_KICK))x) ;
