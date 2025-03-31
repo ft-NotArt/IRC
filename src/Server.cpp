@@ -181,8 +181,17 @@ void	Server::receiveMsg(int fd) {
 void	Server::processMsg(int fd) {
 	size_t pos = this->clientBuffers[fd].find("\r\n");
 	while (pos != std::string::npos) {
+		std::stringstream ssMessage(this->clientBuffers[fd].substr(0, pos));
+		/* DEBUG */ std::cout << GREEN << "[CLI[" << fd << "]->SRV] " << debugShowInvisibleChar(ssMessage.str()) << "\e[0m" << std::endl;
+		std::string command;
+
+		ssMessage >> command;
+
+		std::cout << "Command: `" << command << "`" << std::endl;
+
+
+
 		std::string message = this->clientBuffers[fd].substr(0, pos);
-		/* DEBUG */ std::cout << GREEN << "[CLI[" << fd << "]->SRV] " << debugShowInvisibleChar(message) << "\e[0m" << std::endl;
 
 		this->clientBuffers[fd].erase(0, pos + 2);
 		pos = this->clientBuffers[fd].find("\r\n");
