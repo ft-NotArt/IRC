@@ -31,23 +31,23 @@ class User ;
 #define BUFFER_SIZE 1024
 
 #define MSG_CLI_CAP_LS		"CAP LS"
-#define MSG_CLI_CAP_REQ		"CAP REQ "
+#define MSG_CLI_CAP_REQ		"CAP REQ"
 #define MSG_CLI_CAP_END		"CAP END"
-#define MSG_CLI_PASS		"PASS "
-#define MSG_CLI_NICK		"NICK "
-#define MSG_CLI_USER		"USER "
+#define MSG_CLI_PASS		"PASS"
+#define MSG_CLI_NICK		"NICK"
+#define MSG_CLI_USER		"USER"
 
 // FIXME: the space at the end prevent us from detecting the msg as a cmd if no args (ex: "JOIN", no spaces)
 
-#define MSG_CLI_PING		"PING "
-#define MSG_CLI_QUIT		"QUIT "
-#define MSG_CLI_JOIN		"JOIN "
-#define MSG_CLI_PART		"PART "
-#define MSG_CLI_PRIVMSG		"PRIVMSG "
-#define MSG_CLI_TOPIC		"TOPIC "
-#define MSG_CLI_KICK		"KICK "
-#define MSG_CLI_MODE		"MODE "
-#define MSG_CLI_INVITE		"INVITE "
+#define MSG_CLI_PING		"PING"
+#define MSG_CLI_QUIT		"QUIT"
+#define MSG_CLI_JOIN		"JOIN"
+#define MSG_CLI_PART		"PART"
+#define MSG_CLI_PRIVMSG		"PRIVMSG"
+#define MSG_CLI_TOPIC		"TOPIC"
+#define MSG_CLI_KICK		"KICK"
+#define MSG_CLI_MODE		"MODE"
+#define MSG_CLI_INVITE		"INVITE"
 
 class Server {
 	private:

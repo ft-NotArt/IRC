@@ -188,8 +188,7 @@ void	Server::processMsg(int fd) {
 		ssMessage >> command;
 
 		std::cout << "Command: `" << command << "`" << std::endl;
-
-
+		std::cout << "Message: `" << ssMessage.str() << "`" << std::endl;
 
 		std::string message = this->clientBuffers[fd].substr(0, pos);
 
@@ -201,303 +200,306 @@ void	Server::processMsg(int fd) {
 			continue ;
 
 		try {
-			if (message.compare(0, std::strlen(MSG_CLI_CAP_LS), MSG_CLI_CAP_LS) == 0) {
-				this->MSG_CAP_LS(user) ;
+			if (command == "CAP") {
+				std::string capName;
+				ssMessage >> capName;
+
+				if (capName == "LS") {
+					this->MSG_CAP_LS(user);
+				}
+				else if (capName == "REQ") {
+					this->MSG_CAP_ACK(user, "multi-prefix") ; // TODO: Refactor for better implementation
+				}
+				else if (capName == "END") {
+					user->setRequestCap(true) ;
+					if (!user->getUsername().empty())
+						this->greetings(user);
+				}
 			}
-			else if (message.compare(0, std::strlen(MSG_CLI_CAP_REQ), MSG_CLI_CAP_REQ) == 0) {
-				this->MSG_CAP_ACK(user, "multi-prefix") ; // TODO: Refactor for better implementation
-			}
-			else if (message.compare(0, std::strlen(MSG_CLI_CAP_END), MSG_CLI_CAP_END) == 0) {
-				user->setRequestCap(true) ;
-				if (!user->getUsername().empty())
-					this->greetings(user) ;
-			}
-			else if (std::strncmp(message.c_str(), MSG_CLI_PASS, std::strlen(MSG_CLI_PASS)) == 0) {
+			else if (command == MSG_CLI_PASS) {
 				user->setPassword(message.substr(std::strlen(MSG_CLI_PASS)));
 			}
-			else if (message.compare(0, std::strlen(MSG_CLI_NICK), MSG_CLI_NICK) == 0) {
+			else if (command == MSG_CLI_NICK) {
 				user->setNickname(message.substr(std::strlen(MSG_CLI_NICK)));
 			}
-			else if (message.compare(0, std::strlen(MSG_CLI_USER), MSG_CLI_USER) == 0) {
+			else if (command == MSG_CLI_USER) {
 				user->setUsername(message.substr(std::strlen(MSG_CLI_USER), message.find(' ', std::strlen(MSG_CLI_USER))));
 
 				if (user->getPassword() != this->password)
 					throw IrcException::PasswdMismatch() ;
 
 				/* DEBUG */ std::cout << LIGHT_GREEN << "[DBUG|CLI[" << fd << "]] Client " << fd << " authenticated successfully." << "\e[0m" << std::endl;
+				user->setRegistered(true) ;
 
 				if (user->hasRequestCap())
 					this->greetings(user) ;
 			}
-			// *** COMMANDS *** // // TODO : Uncomment when implemented
-			else if (std::strncmp(message.c_str(), MSG_CLI_PING, std::strlen(MSG_CLI_PING)) == 0) {
-				this->MSG_PONG(user, message.substr(std::strlen(MSG_CLI_PING))) ;
-			}
-			else if (std::strncmp(message.c_str(), MSG_CLI_QUIT, std::strlen(MSG_CLI_QUIT)) == 0) {
-				std::size_t colon_pos = message.find(':') ;
+			else {
+				if (!user->isRegistered())
+					throw IrcException::NotRegistered() ;
 
-				std::string reason ;
-				if (colon_pos == std::string::npos)
-					reason = "no reason" ;
-				else
-					reason = trim(message.substr(colon_pos + 1)) ;
-				if (reason.empty())
-					reason = "no reason" ;
-
-				this->QUIT(user, reason, true) ;
-			}
-			else if (std::strncmp(message.c_str(), MSG_CLI_JOIN, std::strlen(MSG_CLI_JOIN)) == 0) {
-				try {
-					std::stringstream ss(message.substr(std::strlen(MSG_CLI_JOIN))) ;
-					std::string tmp ;
-
-					ss >> tmp ;
-					if (tmp.empty())
-						throw IrcException::NeedMoreParams() ;
-					std::stringstream channels(tmp) ;
-
-					ss >> tmp ;
-					std::stringstream keys(tmp) ;
-
-					std::string channel ;
-					std::string key ;
-					while (std::getline(channels, channel, ',')) {
-						key = "" ; // Reset to ensure we don't keep the key from before
-						std::getline(keys, key, ',') ;
-						try {
-							if (channel[0] != '#')
-								throw IrcException::BadChanMask(channel) ;
-
-							this->JOIN(user, channel, key) ;
-						} catch(const std::exception& e) {
-							std::string except(e.what());
-							replaceAll(except, "%client%", user->getNickname()) ;
-							replaceAll(except, "%command%", MSG_CLI_JOIN) ;
-							try {
-								this->sendMsg(fd, except) ;
-							} catch (const std::exception &ex) {}
-						}
-					}
-				} catch(const std::exception& e) {
-					std::string except(e.what());
-					replaceAll(except, "%client%", user->getNickname()) ;
-					replaceAll(except, "%command%", MSG_CLI_JOIN) ;
-					try {
-						this->sendMsg(fd, except) ;
-					} catch (const std::exception &ex) {}
+				// *** COMMANDS *** // // TODO : Uncomment when implemented
+				if (command == MSG_CLI_PING) {
+					this->MSG_PONG(user, message.substr(std::strlen(MSG_CLI_PING))) ;
 				}
-			}
-			else if (std::strncmp(message.c_str(), MSG_CLI_PART, std::strlen(MSG_CLI_PART)) == 0) {
-				try {
+				else if (command == MSG_CLI_QUIT) {
 					std::size_t colon_pos = message.find(':') ;
 
-					std::string reason("") ;
-					if (colon_pos != std::string::npos)
-						reason = trim(message.substr(colon_pos + 1)) ;
-
-					std::string tmp ;
-					if (colon_pos != std::string::npos)
-						tmp = (trim(message.substr(std::strlen(MSG_CLI_PART), colon_pos - std::strlen(MSG_CLI_PART)))) ;
-					else
-						tmp = (trim(message.substr(std::strlen(MSG_CLI_PART)))) ;
-					if (tmp.empty())
-						throw IrcException::NeedMoreParams() ;
-
-					std::stringstream channels(tmp) ;
-					std::string channel ;
-					while (std::getline(channels, channel, ',')) {
-						try {
-							if (channel[0] != '#')
-								throw IrcException::BadChanMask(channel) ;
-
-							this->PART(user, channel, reason) ;
-						} catch(const std::exception& e) {
-							std::string except(e.what());
-							replaceAll(except, "%client%", user->getNickname()) ;
-							replaceAll(except, "%command%", MSG_CLI_PART) ;
-							try {
-								this->sendMsg(fd, except) ;
-							} catch (const std::exception &ex) {}
-						}
-					}
-				} catch(const std::exception& e) {
-					std::string except(e.what());
-					replaceAll(except, "%client%", user->getNickname()) ;
-					replaceAll(except, "%command%", MSG_CLI_PART) ;
-					try {
-						this->sendMsg(fd, except) ;
-					} catch (const std::exception &ex) {}
-				}
-				
-			}
-			else if (std::strncmp(message.c_str(), MSG_CLI_PRIVMSG, std::strlen(MSG_CLI_PRIVMSG)) == 0) {
-				try {
-					std::size_t colon_pos = message.find(':') ;
-
-					std::string text ;
+					std::string reason ;
 					if (colon_pos == std::string::npos)
-						throw IrcException::NoTextToSend() ;
+						reason = "no reason" ;
 					else
-						text = trim(message.substr(colon_pos + 1)) ;
-					if (text.empty())
-						throw IrcException::NoTextToSend() ;
+						reason = trim(message.substr(colon_pos + 1)) ;
+					if (reason.empty())
+						reason = "no reason" ;
 
-					std::vector<std::string> targets ;
-
-					std::stringstream ss ;
-					if (colon_pos != std::string::npos)
-						ss.str(message.substr(std::strlen(MSG_CLI_PRIVMSG), colon_pos - std::strlen(MSG_CLI_PRIVMSG))) ;
-					else
-						ss.str(message.substr(std::strlen(MSG_CLI_PRIVMSG))) ;
-					
-					std::string tmp ;
-					while (ss >> tmp)
-						targets.push_back(tmp) ;
-
-					if (targets.empty())
-						throw IrcException::NoRecipient() ;
-
-					this->PRIVMSG(user, targets, text) ;
-
-				} catch(const std::exception& e) {
-					std::string except(e.what());
-					replaceAll(except, "%client%", user->getNickname()) ;
-					replaceAll(except, "%command%", MSG_CLI_PRIVMSG) ;
-					try {
-						this->sendMsg(fd, except) ;
-					} catch (const std::exception &ex) {}
+					this->QUIT(user, reason, true) ;
 				}
-			}
-			else if (std::strncmp(message.c_str(), MSG_CLI_TOPIC, std::strlen(MSG_CLI_TOPIC)) == 0) {
-				try {
-					std::size_t colon_pos = message.find(':') ;
-
-					std::string	channel("") ;
-					std::string	topic("") ;
-					bool		modify ;
-					if (colon_pos != std::string::npos) { // A new topic is given
-						channel = trim(message.substr(std::strlen(MSG_CLI_TOPIC), colon_pos - std::strlen(MSG_CLI_TOPIC))) ;
-						topic = trim(message.substr(colon_pos + 1)) ;
-						modify = true ;
-					}
-					else { // No topic is given, user wants to see actual one
-						channel = trim(message.substr(std::strlen(MSG_CLI_TOPIC))) ;
-						modify = false ;
-					}
-					
-					if (channel.empty())
-						throw IrcException::NeedMoreParams() ;
-					else if (channel[0] != '#')
-						throw IrcException::BadChanMask(channel) ;
-					else if (!this->getChannel(channel))
-						throw IrcException::NoSuchChannel(channel) ;
-					
-					this->TOPIC(user, channel, topic, modify) ;
-				} catch(const std::exception& e) {
-					std::string except(e.what());
-					replaceAll(except, "%client%", user->getNickname()) ;
-					replaceAll(except, "%command%", MSG_CLI_TOPIC) ;
+				else if (command == MSG_CLI_JOIN) {
 					try {
-						this->sendMsg(fd, except) ;
-					} catch (const std::exception &ex) {}
-				}
-			}
-			else if (std::strncmp(message.c_str(), MSG_CLI_KICK, std::strlen(MSG_CLI_KICK)) == 0) {
-				try {
-					std::size_t colon_pos = message.find(':') ;
+						std::stringstream ss(message.substr(std::strlen(MSG_CLI_JOIN))) ;
+						std::string tmp ;
 
-					std::string comment ;
-					if (colon_pos != std::string::npos)
-						comment = trim(message.substr(colon_pos + 1)) ;
-					else
-						comment = "pas sage" ;
+						ss >> tmp ;
+						if (tmp.empty())
+							throw IrcException::NeedMoreParams() ;
+						std::stringstream channels(tmp) ;
 
-					std::stringstream ss ;
-					if (colon_pos != std::string::npos)
-						ss.str(message.substr(std::strlen(MSG_CLI_KICK), colon_pos - std::strlen(MSG_CLI_KICK))) ;
-					else
-						ss.str(message.substr(std::strlen(MSG_CLI_KICK))) ;
+						ss >> tmp ;
+						std::stringstream keys(tmp) ;
 
-					std::string channel ;
-					ss >> channel ;
-					if (channel.empty())
-						throw IrcException::NeedMoreParams() ;
-
-					std::string tmp ;
-					ss >> tmp ;
-					if (tmp.empty())
-						throw IrcException::NeedMoreParams() ;
-					std::stringstream users(tmp) ;
-					
-					std::string kickedUser ;
-					while (std::getline(users, kickedUser, ',')) {
-						try {
-							if (channel[0] != '#')
-								throw IrcException::BadChanMask(channel) ;
-
-							this->KICK(user, channel, kickedUser, comment) ;
-						} catch(const std::exception& e) {
-							std::string except(e.what());
-							replaceAll(except, "%client%", user->getNickname()) ;
-							replaceAll(except, "%command%", MSG_CLI_KICK) ;
+						std::string channel ;
+						std::string key ;
+						while (std::getline(channels, channel, ',')) {
+							key = "" ; // Reset to ensure we don't keep the key from before
+							std::getline(keys, key, ',') ;
 							try {
-								this->sendMsg(fd, except) ;
-							} catch (const std::exception &ex) {}
+								if (channel[0] != '#')
+									throw IrcException::BadChanMask(channel) ;
+
+								this->JOIN(user, channel, key) ;
+							} catch(const std::exception& e) {
+								std::string except(e.what());
+								replaceAll(except, "%client%", user->getNickname()) ;
+								replaceAll(except, "%command%", MSG_CLI_JOIN) ;
+								try {
+									this->sendMsg(fd, except) ;
+								} catch (const std::exception &ex) {}
+							}
 						}
+					} catch(const std::exception& e) {
+						std::string except(e.what());
+						replaceAll(except, "%client%", user->getNickname()) ;
+						replaceAll(except, "%command%", MSG_CLI_JOIN) ;
+						try {
+							this->sendMsg(fd, except) ;
+						} catch (const std::exception &ex) {}
 					}
-				} catch(const std::exception& e) {
-					std::string except(e.what());
-					replaceAll(except, "%client%", user->getNickname()) ;
-					replaceAll(except, "%command%", MSG_CLI_KICK) ;
-					try {
-						this->sendMsg(fd, except) ;
-					} catch (const std::exception &ex) {}
 				}
-			}
-			else if (std::strncmp(message.c_str(), MSG_CLI_MODE, std::strlen(MSG_CLI_MODE)) == 0) {
-				try
-				{
-					//  TODO handle when /mode only is sent, Irssi is the only one sending the message
-					std::stringstream ss(message.substr(std::strlen(MSG_CLI_MODE)));
-					std::string channel;
-
-					ss >> channel; // The channel target out here
-					if (channel.empty())
-					{
-						throw IrcException::NeedMoreParams();
-					}
-
-					std::vector<std::string> modesArgs;
-					std::string tmp; // Fkin tmp cause we have to operate like this
-
-					while (ss >> tmp)
-					{
-						modesArgs.push_back(tmp);
-					}
-
-					// TODOD if !modesArgs -> Reply channel modes is 324
-					this->MODE(user, channel, modesArgs);
-
-				} catch(const std::exception& e) {
-					std::string except(e.what());
-					replaceAll(except, "%client%", user->getNickname()) ;
-					replaceAll(except, "%command%", MSG_CLI_MODE) ;
+				else if (command == MSG_CLI_PART) {
 					try {
-						this->sendMsg(fd, except) ;
-					} catch (const std::exception &ex) {}
+						std::size_t colon_pos = message.find(':') ;
+
+						std::string reason("") ;
+						if (colon_pos != std::string::npos)
+							reason = trim(message.substr(colon_pos + 1)) ;
+
+						std::string tmp ;
+						if (colon_pos != std::string::npos)
+							tmp = (trim(message.substr(std::strlen(MSG_CLI_PART), colon_pos - std::strlen(MSG_CLI_PART)))) ;
+						else
+							tmp = (trim(message.substr(std::strlen(MSG_CLI_PART)))) ;
+						if (tmp.empty())
+							throw IrcException::NeedMoreParams() ;
+
+						std::stringstream channels(tmp) ;
+						std::string channel ;
+						while (std::getline(channels, channel, ',')) {
+							try {
+								if (channel[0] != '#')
+									throw IrcException::BadChanMask(channel) ;
+
+								this->PART(user, channel, reason) ;
+							} catch(const std::exception& e) {
+								std::string except(e.what());
+								replaceAll(except, "%client%", user->getNickname()) ;
+								replaceAll(except, "%command%", MSG_CLI_PART) ;
+								try {
+									this->sendMsg(fd, except) ;
+								} catch (const std::exception &ex) {}
+							}
+						}
+					} catch(const std::exception& e) {
+						std::string except(e.what());
+						replaceAll(except, "%client%", user->getNickname()) ;
+						replaceAll(except, "%command%", MSG_CLI_PART) ;
+						try {
+							this->sendMsg(fd, except) ;
+						} catch (const std::exception &ex) {}
+					}
 				}
-			}
-			else if (std::strncmp(message.c_str(), MSG_CLI_INVITE, std::strlen(MSG_CLI_INVITE)) == 0) {
-				// this->INVITE(user, message.substr(std::strlen(MSG_CLI_INVITE))) ;
-			}
-			else if (std::strncmp(message.c_str(), MSG_CLI_NICK, std::strlen(MSG_CLI_NICK)) == 0) {
-				// this->NICK(user, message.substr(std::strlen(MSG_CLI_NICK))) ;
+				else if (command == MSG_CLI_PRIVMSG) {
+					try {
+						std::size_t colon_pos = message.find(':') ;
+
+						std::string text ;
+						if (colon_pos == std::string::npos)
+							throw IrcException::NoTextToSend() ;
+						else
+							text = trim(message.substr(colon_pos + 1)) ;
+						if (text.empty())
+							throw IrcException::NoTextToSend() ;
+
+						std::vector<std::string> targets ;
+						std::stringstream ss(message.substr(std::strlen(MSG_CLI_PRIVMSG), colon_pos - std::strlen(MSG_CLI_PRIVMSG))) ;
+						std::string tmp ;
+						while (ss >> tmp)
+							targets.push_back(tmp) ;
+
+						if (targets.empty())
+							throw IrcException::NoRecipient() ;
+
+						this->PRIVMSG(user, targets, text) ;
+
+					} catch(const std::exception& e) {
+						std::string except(e.what());
+						replaceAll(except, "%client%", user->getNickname()) ;
+						replaceAll(except, "%command%", MSG_CLI_PRIVMSG) ;
+						try {
+							this->sendMsg(fd, except) ;
+						} catch (const std::exception &ex) {}
+					}
+				}
+				else if (command == MSG_CLI_TOPIC) { // TODO: Not Working with new parsing
+					// try {
+					// 	std::size_t colon_pos = message.find(':') ;
+
+					// 	std::string	channel("") ;
+					// 	std::string	topic("") ;
+					// 	bool		modify ;
+					// 	if (colon_pos != std::string::npos) { // A new topic is given
+					// 		channel = trim(message.substr(std::strlen(MSG_CLI_TOPIC), colon_pos - std::strlen(MSG_CLI_TOPIC))) ;
+					// 		topic = trim(message.substr(colon_pos + 1)) ;
+					// 		modify = true ;
+					// 	}
+					// 	else { // No topic is given, user wants to see actual one
+					// 		channel = trim(message.substr(std::strlen(MSG_CLI_TOPIC))) ;
+					// 		modify = false ;
+					// 	}
+
+					// 	if (channel.empty())
+					// 		throw IrcException::NeedMoreParams() ;
+					// 	else if (channel[0] != '#')
+					// 		throw IrcException::BadChanMask(channel) ;
+					// 	else if (!this->getChannel(channel))
+					// 		throw IrcException::NoSuchChannel(channel) ;
+
+					// 	this->TOPIC(user, channel, topic, modify) ;
+					// } catch(const std::exception& e) {
+					// 	std::string except(e.what());
+					// 	replaceAll(except, "%client%", user->getNickname()) ;
+					// 	replaceAll(except, "%command%", MSG_CLI_TOPIC) ;
+					// 	try {
+					// 		this->sendMsg(fd, except) ;
+					// 	} catch (const std::exception &ex) {}
+					// }
+				}
+				else if (command == MSG_CLI_KICK) { // TODO: Not Working with new parsing
+					// try {
+					// 	std::size_t colon_pos = message.find(':') ;
+
+					// 	std::string comment ;
+					// 	if (colon_pos != std::string::npos)
+					// 		comment = trim(message.substr(colon_pos + 1)) ;
+					// 	else
+					// 		comment = "pas sage" ;
+
+					// 	std::stringstream ss ;
+					// 	if (colon_pos != std::string::npos)
+					// 		ss.str(message.substr(std::strlen(MSG_CLI_KICK), colon_pos - std::strlen(MSG_CLI_KICK))) ;
+					// 	else
+					// 		ss.str(message.substr(std::strlen(MSG_CLI_KICK))) ;
+
+					// 	std::string channel ;
+					// 	ss >> channel ;
+					// 	if (channel.empty())
+					// 		throw IrcException::NeedMoreParams() ;
+
+					// 	std::string tmp ;
+					// 	ss >> tmp ;
+					// 	if (tmp.empty())
+					// 		throw IrcException::NeedMoreParams() ;
+					// 	std::stringstream users(tmp) ;
+
+					// 	std::string kickedUser ;
+					// 	while (std::getline(users, kickedUser, ',')) {
+					// 		try {
+					// 			if (channel[0] != '#')
+					// 				throw IrcException::BadChanMask(channel) ;
+
+					// 			this->KICK(user, channel, kickedUser, comment) ;
+					// 		} catch(const std::exception& e) {
+					// 			std::string except(e.what());
+					// 			replaceAll(except, "%client%", user->getNickname()) ;
+					// 			replaceAll(except, "%command%", MSG_CLI_KICK) ;
+					// 			try {
+					// 				this->sendMsg(fd, except) ;
+					// 			} catch (const std::exception &ex) {}
+					// 		}
+					// 	}
+					// } catch(const std::exception& e) {
+					// 	std::string except(e.what());
+					// 	replaceAll(except, "%client%", user->getNickname()) ;
+					// 	replaceAll(except, "%command%", MSG_CLI_KICK) ;
+					// 	try {
+					// 		this->sendMsg(fd, except) ;
+					// 	} catch (const std::exception &ex) {}
+					// }
+				}
+				else if (command == MSG_CLI_MODE) {
+					// try
+				// {
+				// 	//  TODO handle when /mode only is sent, Irssi is the only one sending the message
+				// 	std::stringstream ss(message.substr(std::strlen(MSG_CLI_MODE)));
+				// 	std::string channel;
+
+				// 	ss >> channel; // The channel target out here
+				// 	if (channel.empty())
+				// 	{
+				// 		throw IrcException::NeedMoreParams();
+				// 	}
+
+				// 	std::vector<std::string> modesArgs;
+				// 	std::string tmp; // Fkin tmp cause we have to operate like this
+
+				// 	while (ss >> tmp)
+				// 	{
+				// 		modesArgs.push_back(tmp);
+				// 	}
+
+				// 	// TODOD if !modesArgs -> Reply channel modes is 324
+				// 	this->MODE(user, channel, modesArgs);
+
+				// } catch(const std::exception& e) {
+				// 	std::string except(e.what());
+				// 	replaceAll(except, "%client%", user->getNickname()) ;
+				// 	replaceAll(except, "%command%", MSG_CLI_MODE) ;
+				}
+				else if (command == MSG_CLI_INVITE) { // std::strncmp(message.c_str(), MSG_CLI_INVITE, std::strlen(MSG_CLI_INVITE)) == 0
+					// this->INVITE(user, message.substr(std::strlen(MSG_CLI_INVITE))) ;
+				}
+				else if (command == MSG_CLI_NICK) { // std::strncmp(message.c_str(), MSG_CLI_NICK, std::strlen(MSG_CLI_NICK)) == 0
+					// this->NICK(user, message.substr(std::strlen(MSG_CLI_NICK))) ;
+				}
 			}
 		} catch (const std::exception &e) {
 			/* DEBUG */ std::cout << LIGHT_RED << "[DBUG|CLI[" << fd << "]] Exception caught: " << e.what() << "\e[0m" << std::endl;
 			if (e.what()[0] == ':') {
 				std::string except(e.what());
-				replaceAll(except, "%client%", user->getNickname()) ;
+				if (!user->getNickname().empty())
+					replaceAll(except, "%client%", user->getNickname()) ;
+				else
+					replaceAll(except, "%client%", "gobelin");
 				try {
 					this->sendMsg(fd, except) ;
 				} catch (const std::exception &ex) {}
