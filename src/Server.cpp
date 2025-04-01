@@ -10,6 +10,7 @@
 #define BLUE "\e[1;34m"
 #define GRAY "\e[1;90m"
 #define YELLOW "\e[1;93m"
+#define CYAN "\e[1;96m"
 #define RESET "\e[0m"
 
 #include <sstream>
@@ -96,7 +97,7 @@ void Server::start(void) {
 
 void Server::run(void) {
 	while (true) {
-		std::cout << "Waiting for events..." << std::endl;
+		std::cout << std::endl << CYAN "[DBUG|SERVER] Waiting for events..." << std::endl;
 
 		int numEvents = epoll_wait(this->epollFd, this->events, MAX_EVENTS, -1);
 		if (numEvents < 0) {
@@ -188,11 +189,6 @@ void	Server::processMsg(int fd) {
 
 		ssMessage >> command;
 
-		std::cout << "Command: `" << command << "`" << std::endl;
-		std::cout << "Message: `" << ssMessage.str() << "`" << std::endl;
-
-		// std::string message = this->clientBuffers[fd].substr(0, pos);
-
 		this->clientBuffers[fd].erase(0, pos + 2);
 		pos = this->clientBuffers[fd].find("\r\n");
 
@@ -257,6 +253,7 @@ void	Server::processMsg(int fd) {
 					std::string token;
 					ssMessage >> token;
 
+					/* DEBUG */ std::cout << YELLOW "[DBUG|CLI[" << fd << "]] PING: Token: `" << token << "`" << std::endl;
 					this->MSG_PONG(user, token) ;
 				}
 				else if (command == MSG_CLI_QUIT) {
@@ -268,8 +265,8 @@ void	Server::processMsg(int fd) {
 					} catch (std::out_of_range &e) {
 						reason = "no reason" ;
 					}
-					/* DEBUG */ std::cout << YELLOW "[DBUG|CLI[" << fd << "]] Quit Reason: `" << reason << "`" << std::endl;
 
+					/* DEBUG */ std::cout << YELLOW "[DBUG|CLI[" << fd << "]] QUIT: Reason: `" << reason << "`" << std::endl;
 					this->QUIT(user, reason, true) ;
 				}
 				else if (command == MSG_CLI_JOIN) {
@@ -357,7 +354,7 @@ void	Server::processMsg(int fd) {
 				}
 				else if (command == MSG_CLI_PRIVMSG) {
 					// try {
-					// 	// std::size_t colon_pos = message.find(':') ;
+					// std::size_t colon_pos = message.find(':') ;
 					// 	std::size_t colon_pos = 0 ;
 
 					// 	std::string text ;
