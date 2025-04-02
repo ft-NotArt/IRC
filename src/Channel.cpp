@@ -29,7 +29,7 @@ Channel::Channel(const std::string &name, const Server &server, const User *crea
 
 /* Get */
 
-/**
+/***
  * @brief Used for RPL_NAMREPLY
  * @return A string containing the names of every members of the channel (with @ before the name for operators)
  */

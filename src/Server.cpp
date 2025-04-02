@@ -142,7 +142,9 @@ void Server::acceptClient() {
 	}
 }
 
-// TODO: Remove user from channels variables
+/***
+ * @warning Check twice wether you want to call Server::QUIT(..., ..., false) or this one
+ */
 void	Server::closeClient(int fd) {
 	std::cout << "Client " << fd << " disconnected." << std::endl;
 
