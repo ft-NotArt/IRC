@@ -17,6 +17,7 @@ class User ;
 #include <cstdlib>
 #include <cstring>
 #include <cerrno>
+#include <ctime>
 #include <sys/socket.h>
 #include <sys/epoll.h>
 #include <sys/types.h>
@@ -57,6 +58,7 @@ class Server {
 		std::map<int, std::string>			clientBuffers ;
 		std::map<std::string, Channel *>	channels ;
 		std::map<int, User *>				users ;
+		std::tm								*creationDate ;
 
 	public:
 		Server(const std::string &password, const int port) ;

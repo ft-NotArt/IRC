@@ -32,7 +32,10 @@ static std::string debugShowInvisibleChar(const std::string& buffer) {
 
 /* Constructor */
 
-Server::Server(const std::string &password, const int port) : password(password), port(port) {}
+Server::Server(const std::string &password, const int port) : password(password), port(port) {
+	time_t now = time(NULL) ;
+	this->creationDate = localtime(&now) ;
+}
 
 /* Destructor */
 
