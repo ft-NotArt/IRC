@@ -13,12 +13,12 @@ class User ;
 #include <ctime>
 #include <stdint.h>
 
-enum {
+typedef enum c_perms {
 	OPERATOR	= 0b10000000,
 	INVITED		= 0b00010000,
 	BANNED		= 0b00000001,
 	NORMAL		= 0b00000000
-} ;
+} t_perms ;
 
 class Channel {
 	private:
@@ -50,9 +50,14 @@ class Channel {
 
 		bool									isUserIn(const User *user)	const ;
 
-		void	setPassword(const std::string &password)	{ this->password = password ; } ;
-		void	setTopic(const std::string &topic)			{ this->topic = topic ; } ;
-		void	setMaxUsers(int max_users)					{ this->max_users = max_users ; } ;
+		void	setPassword(const std::string &password)					{ this->password = password ; } ;
+		void	setMaxUsers(int max_users)									{ this->max_users = max_users ; } ;
+		void	setInviteOnly(bool invite_only)								{ this->invite_only = invite_only ; } ;
+		void	setTopicRestrict(bool topic_restrict)						{ this->topic_restrict = topic_restrict ; } ;
+
+		bool	hasPerms(const User *user, uint8_t perms) ;
+		void	addPerms(const User *user, uint8_t perms) ;
+		void	removePerms(const User *user, uint8_t perms) ;
 
 		void	join(const User *user, const std::string &password) ;
 		void	leave(const User *user, const std::string &msg) ;
@@ -64,4 +69,6 @@ class Channel {
 		void	sendTopic(const User *user) ;
 
 		void	sendMsg(const User *user, const std::string &text) const ;
+
+		// TODO: Method PART (leave)
 } ;

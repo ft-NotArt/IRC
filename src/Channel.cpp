@@ -27,7 +27,7 @@ Channel::Channel(const std::string &name, const Server &server, const User *crea
 }
 
 
-/* Get */
+/* Get & Set */
 
 /***
  * @brief Used for RPL_NAMREPLY
@@ -51,8 +51,32 @@ std::string Channel::getUsers() const {
 bool	Channel::isUserIn(const User *user) const {
 	if (this->users.find(user) != this->users.end())
 		return true ;
-	
+
 	return false ;
+}
+
+bool	Channel::hasPerms(const User *user, uint8_t perms) {
+	bool hasPerms = false;
+
+	try {
+		hasPerms = this->perms[user] & perms;
+	} catch (const std::exception &ex) {}
+
+	return hasPerms;
+}
+
+void	Channel::addPerms(const User *user, uint8_t perms) {
+	try {
+		this->perms[user] |= perms;
+	} catch (const std::exception &ex) {
+		this->perms[user] = perms;
+	}
+}
+
+void	Channel::removePerms(const User *user, uint8_t perms) {
+	try {
+		this->perms[user] &= ~perms;
+	} catch (const std::exception &ex) {}
 }
 
 
@@ -108,7 +132,7 @@ void	Channel::kick(const User *user, const User *kicked, const std::string &msg)
 		throw IrcException::UserNotInChannel(user->getNickname(), this->name) ;
 	if (!(this->perms.at(user) & OPERATOR))
 		throw IrcException::ChanoPrivNeeded(this->name) ;
-	
+
 	this->server.sendMsg(kicked->getFd(), msg) ;
 	this->leave(kicked, msg) ;
 }
@@ -143,7 +167,7 @@ void	Channel::changeTopic(const User *user, const std::string &topic) {
 		throw IrcException::NotOnChannel(this->getName()) ;
 	if (topic_restrict && !(this->perms.at(user) & OPERATOR))
 		throw IrcException::ChanoPrivNeeded(this->name) ;
-	
+
 	this->topic = topic ;
 	this->topic_change.first = user ;
 	this->topic_change.second = std::time(NULL) ;
@@ -162,7 +186,7 @@ void	Channel::sendTopic(const User *user) {
 void	Channel::sendMsg(const User *user, const std::string &text) const {
 	if (user && !this->isUserIn(user)) // Make sure user is in the channel, doesn't check if user == NULL (usefull for leave)
 		throw IrcException::CannotSendToChan(this->getName()) ;
-	
+
 	for (std::set<const User *>::iterator it = this->users.begin(); it != this->users.end(); it++) {
 		if ((*it) != user)
 			this->server.sendMsg((*it)->getFd(), text) ;
