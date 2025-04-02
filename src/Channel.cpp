@@ -114,6 +114,8 @@ void	Channel::leave(const User *user, const std::string &msg) {
 void	Channel::changeTopic(const User *user, const std::string &topic) {
 	if (!this->isUserIn(user))
 		throw IrcException::NotOnChannel(this->getName()) ;
+	if (topic_restrict && !(this->perms.at(user) & OPERATOR))
+		throw IrcException::ChanoPrivNeeded(this->name) ;
 	
 	this->topic = topic ;
 	this->topic_change.first = user ;
