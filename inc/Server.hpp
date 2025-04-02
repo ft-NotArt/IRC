@@ -49,14 +49,14 @@ class User ;
 
 class Server {
 	private:
-		const std::string			password ;
-		const int					port ;
-		int							socket ;
-		int							epollFd ;
-		epoll_event					event, events[MAX_EVENTS] ;
-		std::map<int, std::string>	clientBuffers ;
+		const std::string					password ;
+		const int							port ;
+		int									socket ;
+		int									epollFd ;
+		epoll_event							event, events[MAX_EVENTS] ;
+		std::map<int, std::string>			clientBuffers ;
 		std::map<std::string, Channel *>	channels ;
-		std::map<int, User *>		users ;
+		std::map<int, User *>				users ;
 
 	public:
 		Server(const std::string &password, const int port) ;
@@ -91,6 +91,7 @@ class Server {
 		void	MODE(const User *client, const std::string &channel, const std::vector<std::string> &modesArgs);
 		void	TOPIC(const User *client, const std::string &channel, const std::string &topic, bool modify);
 
+		// Replies
 		void	RPL_WELCOME(const User *client)																						const ;
 		void	RPL_NAMREPLY(const User *client, const Channel &channel)															const ;
 		void	RPL_ENDOFNAMES(const User *client, const Channel &channel)															const ;
@@ -101,6 +102,7 @@ class Server {
 		void	RPL_CHANNELMODEIS(const User *client, const Channel &channel, const std::string modes, const std::string params)	const ;
 		void	RPL_YOUREOPER(const User *client)																					const ;
 
+		// Messages
 		void	MSG_CAP_LS(const User *client)													const ;
 		void	MSG_CAP_ACK(const User *client, const std::string &request_capa)				const ;
 		void	MSG_PONG(const User *client, const std::string &token)							const ;

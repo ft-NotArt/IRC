@@ -98,6 +98,19 @@ void Channel::join(const User *user, const std::string &password) {
 	this->server.RPL_ENDOFNAMES(user, *this) ;
 }
 
+void	Channel::leave(const User *user, const std::string &msg) {
+	if (this->perms.find(user) != this->perms.end())
+		this->perms.erase(user) ;
+
+	if (!this->isUserIn(user))
+		throw IrcException::NotOnChannel(this->getName()) ;
+
+	this->users.erase(user) ;
+	this->topic_change.first = NULL ;
+
+	this->sendMsg(NULL, msg) ;
+}
+
 void	Channel::changeTopic(const User *user, const std::string &topic) {
 	if (!this->isUserIn(user))
 		throw IrcException::NotOnChannel(this->getName()) ;
@@ -118,7 +131,7 @@ void	Channel::sendTopic(const User *user) {
 }
 
 void	Channel::sendMsg(const User *user, const std::string &text) const {
-	if (!this->isUserIn(user))
+	if (user && !this->isUserIn(user)) // Make sure user is in the channel, doesn't check if user == NULL (usefull for leave)
 		throw IrcException::CannotSendToChan(this->getName()) ;
 	
 	for (std::set<const User *>::iterator it = this->users.begin(); it != this->users.end(); it++) {

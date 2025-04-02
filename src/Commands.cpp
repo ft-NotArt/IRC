@@ -3,10 +3,22 @@
 void	Server::QUIT(const User *client, const std::string &reason, bool requested) {
 	this->MSG_ERROR(client, reason) ;
 
-	this->closeClient(client->getFd()) ;
+	std::string msg(": ") ;
 
-	(void) requested ;
-	// TODO send quit msg to every channels
+	msg += client->getNickname() ;
+	msg += " QUIT :" ;
+	if (requested)
+		msg += "Quit: " ;
+	msg += reason ;
+
+	for (std::map<std::string, Channel *>::iterator it = this->channels.begin(); it != this->channels.end(); it++) {
+		try {
+			(*it).second->leave(client, msg) ;
+		} catch(const std::exception& e) {}
+	}
+
+	this->closeClient(client->getFd()) ;
+	delete client ;
 }
 
 void	Server::JOIN(const User *client, const std::string &channel, const std::string &key) {
