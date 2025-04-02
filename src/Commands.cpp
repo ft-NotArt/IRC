@@ -3,8 +3,7 @@
 void	Server::QUIT(const User *client, const std::string &reason, bool requested) {
 	this->MSG_ERROR(client, reason) ;
 
-	std::string msg(": ") ;
-
+	std::string msg(":") ;
 	msg += client->getNickname() ;
 	msg += " QUIT :" ;
 	if (requested)
@@ -29,6 +28,26 @@ void	Server::JOIN(const User *client, const std::string &channel, const std::str
 	} else {
 		chan->join(client, key) ;
 	}
+}
+
+void	Server::PART(const User *client, const std::string &channel, const std::string &reason) {
+	Channel *chan = this->getChannel(channel) ;
+	if (!chan)
+		throw IrcException::NoSuchChannel(channel) ;
+	if (!chan->isUserIn(client))
+		throw IrcException::NotOnChannel(channel) ;
+
+	std::string msg(":") ;
+	msg += client->getNickname() ;
+	msg += " PART " ;
+	msg += chan->getName() ;
+	if (reason != "") {
+		msg += " :" ;
+		msg += reason ;
+	}
+
+	chan->leave(client, msg) ;
+	this->sendMsg(client->getFd(), msg) ;
 }
 
 // void Server::INVITE(const User *client, const std::vector<std::string> args)

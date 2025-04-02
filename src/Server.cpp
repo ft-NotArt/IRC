@@ -276,7 +276,43 @@ void	Server::processMsg(int fd) {
 				}
 			}
 			else if (std::strncmp(message.c_str(), MSG_CLI_PART, std::strlen(MSG_CLI_PART)) == 0) {
-				// this->PART(user, message.substr(std::strlen(MSG_CLI_PART))) ;
+				try {
+					std::size_t colon_pos = message.find(':') ;
+
+					std::string reason("") ;
+					if (colon_pos != std::string::npos)
+						reason = trim(message.substr(colon_pos + 1)) ;
+
+					std::string tmp(trim(message.substr(std::strlen(MSG_CLI_PART), colon_pos - std::strlen(MSG_CLI_PART)))) ;
+					if (tmp.empty())
+						throw IrcException::NeedMoreParams() ;
+
+					std::stringstream channels(tmp) ;
+					std::string channel ;
+					while (std::getline(channels, channel, ',')) {
+						try {
+							if (channel[0] != '#')
+								throw IrcException::BadChanMask(channel) ;
+
+							this->PART(user, channel, reason) ;
+						} catch(const std::exception& e) {
+							std::string except(e.what());
+							replaceAll(except, "%client%", user->getNickname()) ;
+							replaceAll(except, "%command%", MSG_CLI_PART) ;
+							try {
+								this->sendMsg(fd, except) ;
+							} catch (const std::exception &ex) {}
+						}
+					}
+				} catch(const std::exception& e) {
+					std::string except(e.what());
+					replaceAll(except, "%client%", user->getNickname()) ;
+					replaceAll(except, "%command%", MSG_CLI_PART) ;
+					try {
+						this->sendMsg(fd, except) ;
+					} catch (const std::exception &ex) {}
+				}
+				
 			}
 			else if (std::strncmp(message.c_str(), MSG_CLI_PRIVMSG, std::strlen(MSG_CLI_PRIVMSG)) == 0) {
 				try {
@@ -318,7 +354,7 @@ void	Server::processMsg(int fd) {
 					std::string	topic("") ;
 					bool		modify ;
 					if (colon_pos != std::string::npos) { // A new topic is given
-						channel = trim(message.substr(std::strlen(MSG_CLI_TOPIC), colon_pos)) ;
+						channel = trim(message.substr(std::strlen(MSG_CLI_TOPIC), colon_pos - std::strlen(MSG_CLI_TOPIC))) ;
 						topic = trim(message.substr(colon_pos + 1)) ;
 						modify = true ;
 					}
