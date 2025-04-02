@@ -58,11 +58,7 @@ void Server::TOPIC(const User *client, const std::string &channel, const std::st
 	if (modify) {
 		chan->changeTopic(client, topic) ;
 	} else {
-		if (chan->getTopic() != "") {
-			this->RPL_TOPIC(client, *chan) ;
-			this->RPL_TOPICWHOTIME(client, *chan) ;
-		} else
-			this->RPL_NOTOPIC(client, *chan) ;
+		chan->sendTopic(client) ;
 	}
 }
 

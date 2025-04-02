@@ -54,7 +54,9 @@ class Channel {
 		void	setMaxUsers(int max_users)					{ this->max_users = max_users ; } ;
 
 		void	join(const User *user, const std::string &password) ;
+
 		void	changeTopic(const User *user, const std::string &topic) ;
+		void	sendTopic(const User *user) ;
 
 		void	sendMsg(const User *user, const std::string &text) const ;
 

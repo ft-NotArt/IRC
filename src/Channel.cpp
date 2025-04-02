@@ -55,6 +55,7 @@ bool	Channel::isUserIn(const User *user) const {
 	return false ;
 }
 
+
 /* Methods */
 
 void Channel::join(const User *user, const std::string &password) {
@@ -91,11 +92,7 @@ void Channel::join(const User *user, const std::string &password) {
 
 	this->server.MSG_JOIN(user, *this) ;
 
-	if (this->topic != "") {
-		this->server.RPL_TOPIC(user, *this) ;
-		this->server.RPL_TOPICWHOTIME(user, *this) ;
-	} else
-		this->server.RPL_NOTOPIC(user, *this) ;
+	this->sendTopic(user) ;
 
 	this->server.RPL_NAMREPLY(user, *this) ;
 	this->server.RPL_ENDOFNAMES(user, *this) ;
@@ -110,6 +107,14 @@ void	Channel::changeTopic(const User *user, const std::string &topic) {
 	this->topic_change.second = std::time(NULL) ;
 
 	this->server.MSG_TOPIC(user, *this, topic) ;
+}
+
+void	Channel::sendTopic(const User *user) {
+	if (this->topic != "") {
+		this->server.RPL_TOPIC(user, *this) ;
+		this->server.RPL_TOPICWHOTIME(user, *this) ;
+	} else
+		this->server.RPL_NOTOPIC(user, *this) ;
 }
 
 void	Channel::sendMsg(const User *user, const std::string &text) const {
