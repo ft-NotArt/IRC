@@ -135,6 +135,7 @@ void	Channel::sendMsg(const User *user, const std::string &text) const {
 		throw IrcException::CannotSendToChan(this->getName()) ;
 	
 	for (std::set<const User *>::iterator it = this->users.begin(); it != this->users.end(); it++) {
-		this->server.sendMsg((*it)->getFd(), text) ;
+		if ((*it) != user)
+			this->server.sendMsg((*it)->getFd(), text) ;
 	}
 }
