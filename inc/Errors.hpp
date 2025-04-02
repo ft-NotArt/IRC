@@ -93,32 +93,32 @@ class IrcException {
 		};
 
 		/// @brief Returned when a nickname parameter is expected for a command but isn’t given.
-		class NoNicknameGivenException : public std::exception {
+		class NoNicknameGiven : public std::exception {
 			public:
 				virtual const char *what() const throw() { return ":Internet_Relay_Chat 431 %client% :No nickname given"; };
 		};
 
 		/// @brief Returned when a NICK command cannot be successfully completed as the desired nickname contains characters that are disallowed by the server. See the NICK command for more information on characters which are allowed in various IRC servers. The text used in the last param of this message may vary.
-		class ErroneusNicknameException : public std::exception {
+		class ErroneusNickname : public std::exception {
 			public:
 				virtual const char *what() const throw() { return ":Internet_Relay_Chat 432 %client% %nick% :Erroneus nickname"; };
 		};
 
 		/// @brief Returned when a NICK command cannot be successfully completed as the desired nickname is already in use on the network. The text used in the last param of this message may vary.
-		class NicknameInUseException : public std::exception {
+		class NicknameInUse : public std::exception {
 			public:
 				virtual const char *what() const throw() { return ":Internet_Relay_Chat 433 %client% %nick% :Nickname is already in use"; };
 		};
 
 		/// @brief Returned when a client tries to perform a channel+nick affecting command, when the nick isn’t joined to the channel (for example, MODE #channel +o nick).
-		class UserNotInChannelException : public std::exception {
+		class UserNotInChannel : public std::exception {
 			private:
 				std::string message ;
 			public:
-				UserNotInChannelException(std::string channel) {
+				UserNotInChannel(std::string channel) {
 					this->message = ":Internet_Relay_Chat 441 %client% %nick% " + channel + " :They aren't on that channel" ;
 				}
-				virtual ~UserNotInChannelException() throw() {}
+				virtual ~UserNotInChannel() throw() {}
 			
 				virtual const char *what() const throw() { return this->message.c_str() ; };
 		};
