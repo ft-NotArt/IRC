@@ -45,8 +45,15 @@ class IrcException {
 
 		/// @brief Indicates that the JOIN command failed because the client has joined their maximum number of channels. The text used in the last param of this message may vary.
 		class TooManyChannels : public std::exception {
+			private:
+				std::string message ;
 			public:
-				virtual const char *what() const throw() { return ":Internet_Relay_Chat 405 %client% %channel% :You have joined too many channels"; };
+				TooManyChannels(std::string channel) {
+					this->message = ":Internet_Relay_Chat 405 %client% " + channel + " :You have joined too many channels" ;
+				}
+				virtual ~TooManyChannels() throw() {}
+			
+				virtual const char *what() const throw() { return this->message.c_str() ; };
 		};
 
 		/// @brief Returned as a reply to WHOWAS to indicate there is no history information for that nickname.
@@ -105,8 +112,15 @@ class IrcException {
 
 		/// @brief Returned when a client tries to perform a channel+nick affecting command, when the nick isn’t joined to the channel (for example, MODE #channel +o nick).
 		class UserNotInChannelException : public std::exception {
+			private:
+				std::string message ;
 			public:
-				virtual const char *what() const throw() { return ":Internet_Relay_Chat 441 %client% %nick% %channel% :They aren't on that channel"; };
+				UserNotInChannelException(std::string channel) {
+					this->message = ":Internet_Relay_Chat 441 %client% %nick% " + channel + " :They aren't on that channel" ;
+				}
+				virtual ~UserNotInChannelException() throw() {}
+			
+				virtual const char *what() const throw() { return this->message.c_str() ; };
 		};
 
 		/// @brief Returned when a client tries to perform a channel-affecting command on a channel which the client isn’t a part of.
@@ -124,8 +138,15 @@ class IrcException {
 
 		/// @brief Returned when a client tries to invite <nick> to a channel they’re already joined to.
 		class UserOnChannel : public std::exception {
+			private:
+				std::string message ;
 			public:
-				virtual const char *what() const throw() { return ":Internet_Relay_Chat 443 %client% %nick% %channel% :is already on channel"; };
+				UserOnChannel(std::string channel) {
+					this->message = ":Internet_Relay_Chat 443 %client% %nick% " + channel + " :is already on channel" ;
+				}
+				virtual ~UserOnChannel() throw() {}
+			
+				virtual const char *what() const throw() { return this->message.c_str() ; };
 		};
 
 		/// @brief Returned when a client command cannot be parsed as they are not yet registered. Servers offer only a limited subset of commands until clients are properly registered to the server. The text used in the last param of this message may vary.
@@ -160,8 +181,15 @@ class IrcException {
 
 		/// @brief Returned to indicate that a JOIN command failed because the client limit mode has been set and the maximum number of users are already joined to the channel. The text used in the last param of this message may vary.
 		class ChannelIsFull : public std::exception {
+			private:
+				std::string message ;
 			public:
-				virtual const char *what() const throw() { return ":Internet_Relay_Chat 471 %client% %channel% :Cannot join channel (+l)"; };
+				ChannelIsFull(std::string channel) {
+					this->message = ":Internet_Relay_Chat 471 %client% " + channel + " :Cannot join channel (+l)" ;
+				}
+				virtual ~ChannelIsFull() throw() {}
+			
+				virtual const char *what() const throw() { return this->message.c_str() ; };
 		};
 
 		/// @brief Indicates that a mode character used by a client is not recognized by the server. The text used in the last param of this message may vary.
@@ -172,20 +200,41 @@ class IrcException {
 
 		/// @brief Returned to indicate that a JOIN command failed because the channel is set to [invite-only] mode and the client has not been invited to the channel or had an invite exception set for them. The text used in the last param of this message may vary.
 		class InviteOnlyChan : public std::exception {
+			private:
+				std::string message ;
 			public:
-				virtual const char *what() const throw() { return ":Internet_Relay_Chat 473 %client% %channel% :Cannot join channel (+i)"; };
+				InviteOnlyChan(std::string channel) {
+					this->message = ":Internet_Relay_Chat 473 %client% " + channel + " :Cannot join channel (+i)" ;
+				}
+				virtual ~InviteOnlyChan() throw() {}
+			
+				virtual const char *what() const throw() { return this->message.c_str() ; };
 		};
 
 		/// @brief Returned to indicate that a JOIN command failed because the client has been banned from the channel and has not had a ban exception set for them. The text used in the last param of this message may vary.
 		class BannedFromChan : public std::exception {
+			private:
+				std::string message ;
 			public:
-				virtual const char *what() const throw() { return ":Internet_Relay_Chat 474 %client% %channel% :Cannot join channel (+b)"; };
+				BannedFromChan(std::string channel) {
+					this->message = ":Internet_Relay_Chat 474 %client% " + channel + " :Cannot join channel (+b)" ;
+				}
+				virtual ~BannedFromChan() throw() {}
+			
+				virtual const char *what() const throw() { return this->message.c_str() ; };
 		};
 
 		/// @brief Returned to indicate that a JOIN command failed because the channel requires a key and the key was either incorrect or not supplied. The text used in the last param of this message may vary. Not to be confused with ERR_INVALIDKEY, which may be returned when setting a key.
 		class BadChannelKey : public std::exception {
+			private:
+				std::string message ;
 			public:
-				virtual const char *what() const throw() { return ":Internet_Relay_Chat 475 %client% %channel% :Cannot join channel (+k)"; };
+				BadChannelKey(std::string channel) {
+					this->message = ":Internet_Relay_Chat 475 %client% " + channel + " :Cannot join channel (+k)" ;
+				}
+				virtual ~BadChannelKey() throw() {}
+			
+				virtual const char *what() const throw() { return this->message.c_str() ; };
 		};
 
 		/// @brief Indicates the supplied channel name is not a valid. This is similar to, but stronger than, ERR_NOSUCHCHANNEL (403), which indicates that the channel does not exist, but that it may be a valid name. The text used in the last param of this message may vary.
@@ -222,8 +271,15 @@ class IrcException {
 
 		/// @brief Indicates that a command failed because the client does not have the appropriate channel privileges. This numeric can apply for different prefixes such as halfop, operator, etc. The text used in the last param of this message may vary.
 		class ChanoPrivNeeded : public std::exception {
+			private:
+				std::string message ;
 			public:
-				virtual const char *what() const throw() { return ":Internet_Relay_Chat 482 %client% %channel% :You're not channel operator"; };
+				ChanoPrivNeeded(std::string channel) {
+					this->message = ":Internet_Relay_Chat 482 %client% " + channel + " :You're not channel operator" ;
+				}
+				virtual ~ChanoPrivNeeded() throw() {}
+			
+				virtual const char *what() const throw() { return this->message.c_str() ; };
 		};
 
 		/// @brief Indicates that a KILL command failed because the user tried to kill a server. The text used in the last param of this message may vary.

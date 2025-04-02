@@ -61,7 +61,7 @@ bool	Channel::isUserIn(const User *user) const {
 void Channel::join(const User *user, const std::string &password) {
 	try {
 		if (this->perms.at(user) & BANNED)
-			throw(IrcException::BannedFromChan());
+			throw(IrcException::BannedFromChan(this->name));
 	} catch(const IrcException::BannedFromChan& e) {
 		throw e ;
 	} catch(const std::exception& e) {}
@@ -71,12 +71,12 @@ void Channel::join(const User *user, const std::string &password) {
 			// if (!(this->perms.at(user) & INVITED))
 			// 	; // return
 		} catch(const std::exception& e) {
-			throw(IrcException::InviteOnlyChan());
+			throw(IrcException::InviteOnlyChan(this->name));
 		}
 	}
 
 	if (this->max_users != -1 && (int) this->users.size() == this->max_users) {
-		throw(IrcException::ChannelIsFull());
+		throw(IrcException::ChannelIsFull(this->name));
 	}
 
 	if (this->password != "" && password != this->password) {
