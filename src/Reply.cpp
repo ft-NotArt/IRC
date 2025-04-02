@@ -69,10 +69,12 @@ void	Server::RPL_TOPICWHOTIME(const User *client, const Channel &channel) const 
 	if (topic_change.first) {
 		rpl += " " ;
 		rpl += topic_change.first->getNickname() ;
-
-		rpl += " " ;
-		rpl += topic_change.second ;
+	} else {
+		rpl += " <Unknow>" ;
 	}
+
+	rpl += " " ;
+	rpl += topic_change.second ;
 
 	this->sendMsg(client->getFd(), rpl) ;
 }
