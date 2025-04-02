@@ -105,14 +105,17 @@ void Server::PRIVMSG(const User *client, const std::vector<std::string> targets,
 	}
 
 	for (std::vector<std::string>::const_iterator it = targets.begin(); it != targets.end(); it++) {
+		std::string msg(":") ;
+		msg += client->getNickname() ;
+		msg += " PRIVMSG " ;
+		msg += (*it) ;
+		msg += " :" ;
+		msg += text ;
+
 		if ((*it)[0] == '#') {
-			try {
-				this->getChannel(*it)->sendMsg(client, text) ;
-			} catch(const std::exception& e) {
-				throw e ;
-			}
+			this->getChannel(*it)->sendMsg(client, msg) ;
 		} else {
-			this->sendMsg(this->getUser(*it)->getFd(), text) ;
+			this->sendMsg(this->getUser(*it)->getFd(), msg) ;
 		}
 	}
 }
