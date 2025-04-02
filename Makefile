@@ -51,4 +51,7 @@ irssi		:
 nc			:
 				nc localhost 5000
 
-.PHONY		=	connect_irssi connect_nc
+irssi3		:
+				for i in $$(seq 1 3); do gnome-terminal -- bash -c "irssi -c localhost -n gobelin$$i -w gobelin123 -p 5000; exec bash"; done
+
+.PHONY		=	irssi nc irssi3
