@@ -62,7 +62,7 @@ void Channel::join(const User *user, const std::string &password) {
 	try {
 		if (this->perms.at(user) & BANNED)
 			throw(IrcException::BannedFromChan(this->name));
-	} catch(const IrcException::BannedFromChan& e) {
+	} catch(const IrcException::BannedFromChan& e) { // This is relevant, don't change
 		throw e ;
 	} catch(const std::exception& e) {}
 

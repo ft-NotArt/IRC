@@ -6,6 +6,12 @@
 /* Replies */
 // TODO: put every this->sendMsg in try catch when sendMsg will throw
 
+void	Server::greetings(const User *user) const {
+	this->RPL_WELCOME(user) ;
+	this->RPL_YOURHOST(user) ;
+	this->RPL_CREATED(user) ;
+}
+
 void	Server::RPL_WELCOME(const User *client) const {
 	std::string rpl(":") ;
 
@@ -18,6 +24,35 @@ void	Server::RPL_WELCOME(const User *client) const {
 	rpl += " Network, " ;
 
 	rpl += client->getNickname() ;
+
+	this->sendMsg(client->getFd(), rpl) ;
+}
+
+void	Server::RPL_YOURHOST(const User *client) const {
+	std::string rpl(":") ;
+
+	rpl += SERVER_NAME ;
+	rpl += " 002 " ;
+	rpl += client->getNickname() ;
+
+	rpl += " :Your host is " ;
+	rpl += SERVER_NAME ;
+
+	rpl += ", running version " ;
+	rpl += SERVER_VERSION ;
+
+	this->sendMsg(client->getFd(), rpl) ;
+}
+
+void	Server::RPL_CREATED(const User *client) const {
+	std::string rpl(":") ;
+
+	rpl += SERVER_NAME ;
+	rpl += " 003 " ;
+	rpl += client->getNickname() ;
+
+	rpl += " :This server was created " ;
+	rpl += asctime(this->creationDate) ;
 
 	this->sendMsg(client->getFd(), rpl) ;
 }

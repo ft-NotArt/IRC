@@ -1,5 +1,7 @@
 #include "Server.hpp"
 
+// TODO: delete channel if nobody in anymore
+
 void	Server::QUIT(const User *client, const std::string &reason, bool requested) {
 	this->MSG_ERROR(client, reason) ;
 

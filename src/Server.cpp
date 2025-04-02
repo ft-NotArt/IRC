@@ -201,7 +201,7 @@ void	Server::processMsg(int fd) {
 			else if (message.compare(0, std::strlen(MSG_CLI_CAP_END), MSG_CLI_CAP_END) == 0) {
 				user->setRequestCap(true) ;
 				if (!user->getUsername().empty())
-					this->RPL_WELCOME(this->getUserByFd(fd));
+					this->greetings(user) ;
 			}
 			else if (std::strncmp(message.c_str(), MSG_CLI_PASS, std::strlen(MSG_CLI_PASS)) == 0) {
 				user->setPassword(message.substr(std::strlen(MSG_CLI_PASS)));
@@ -218,7 +218,7 @@ void	Server::processMsg(int fd) {
 				/* DEBUG */ std::cout << LIGHT_GREEN << "[DBUG|CLI[" << fd << "]] Client " << fd << " authenticated successfully." << "\e[0m" << std::endl;
 
 				if (user->hasRequestCap())
-					this->RPL_WELCOME(this->getUserByFd(fd));
+					this->greetings(user) ;
 			}
 			// *** COMMANDS *** // // TODO : Uncomment when implemented
 			else if (std::strncmp(message.c_str(), MSG_CLI_PING, std::strlen(MSG_CLI_PING)) == 0) {

@@ -24,6 +24,7 @@ class User ;
 #include <netinet/in.h>
 
 #define SERVER_NAME		"Internet_Relay_Chat"
+#define SERVER_VERSION	"2.0"
 
 #define MAX_CONNECTIONS 5
 #define MAX_EVENTS 10
@@ -95,7 +96,10 @@ class Server {
 		void	TOPIC(const User *client, const std::string &channel, const std::string &topic, bool modify);
 
 		// Replies
+		void	greetings(const User *client)																						const ;
 		void	RPL_WELCOME(const User *client)																						const ;
+		void	RPL_YOURHOST(const User *client)																					const ;
+		void	RPL_CREATED(const User *client)																						const ;
 		void	RPL_NAMREPLY(const User *client, const Channel &channel)															const ;
 		void	RPL_ENDOFNAMES(const User *client, const Channel &channel)															const ;
 		void	RPL_INVITING(const User *client, const User *invited, const Channel &channel)										const ;
