@@ -88,7 +88,7 @@ class Server {
 		void 	JOIN(const User *client, const std::string &channel, const std::string &key);
 		void	PART(const User *client, const std::string &channel, const std::string &reason);
 		void	INVITE(const User *client, const std::vector<std::string> args);
-		void	KICK(const User *client, const std::vector<std::string> args);
+		void	KICK(const User *client, const std::string &channel, const std::string &kickedUser, const std::string &comment);
 		void	MODE(const User *client, const std::string &channel, const std::vector<std::string> &modesArgs);
 		void	TOPIC(const User *client, const std::string &channel, const std::string &topic, bool modify);
 

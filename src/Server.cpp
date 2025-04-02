@@ -283,7 +283,11 @@ void	Server::processMsg(int fd) {
 					if (colon_pos != std::string::npos)
 						reason = trim(message.substr(colon_pos + 1)) ;
 
-					std::string tmp(trim(message.substr(std::strlen(MSG_CLI_PART), colon_pos - std::strlen(MSG_CLI_PART)))) ;
+					std::string tmp ;
+					if (colon_pos != std::string::npos)
+						tmp = (trim(message.substr(std::strlen(MSG_CLI_PART), colon_pos - std::strlen(MSG_CLI_PART)))) ;
+					else
+						tmp = (trim(message.substr(std::strlen(MSG_CLI_PART)))) ;
 					if (tmp.empty())
 						throw IrcException::NeedMoreParams() ;
 
@@ -327,7 +331,13 @@ void	Server::processMsg(int fd) {
 						throw IrcException::NoTextToSend() ;
 
 					std::vector<std::string> targets ;
-					std::stringstream ss(message.substr(std::strlen(MSG_CLI_PRIVMSG), colon_pos - std::strlen(MSG_CLI_PRIVMSG))) ;
+
+					std::stringstream ss ;
+					if (colon_pos != std::string::npos)
+						ss.str(message.substr(std::strlen(MSG_CLI_PRIVMSG), colon_pos - std::strlen(MSG_CLI_PRIVMSG))) ;
+					else
+						ss.str(message.substr(std::strlen(MSG_CLI_PRIVMSG))) ;
+					
 					std::string tmp ;
 					while (ss >> tmp)
 						targets.push_back(tmp) ;
@@ -381,7 +391,56 @@ void	Server::processMsg(int fd) {
 				}
 			}
 			else if (std::strncmp(message.c_str(), MSG_CLI_KICK, std::strlen(MSG_CLI_KICK)) == 0) {
-				// this->KICK(user, message.substr(std::strlen(MSG_CLI_KICK))x) ;
+				try {
+					std::size_t colon_pos = message.find(':') ;
+
+					std::string comment ;
+					if (colon_pos != std::string::npos)
+						comment = trim(message.substr(colon_pos + 1)) ;
+					else
+						comment = "pas sage" ;
+
+					std::stringstream ss ;
+					if (colon_pos != std::string::npos)
+						ss.str(message.substr(std::strlen(MSG_CLI_KICK), colon_pos - std::strlen(MSG_CLI_KICK))) ;
+					else
+						ss.str(message.substr(std::strlen(MSG_CLI_KICK))) ;
+
+					std::string channel ;
+					ss >> channel ;
+					if (channel.empty())
+						throw IrcException::NeedMoreParams() ;
+
+					std::string tmp ;
+					ss >> tmp ;
+					if (tmp.empty())
+						throw IrcException::NeedMoreParams() ;
+					std::stringstream users(tmp) ;
+					
+					std::string kickedUser ;
+					while (std::getline(users, kickedUser, ',')) {
+						try {
+							if (channel[0] != '#')
+								throw IrcException::BadChanMask(channel) ;
+
+							this->KICK(user, channel, kickedUser, comment) ;
+						} catch(const std::exception& e) {
+							std::string except(e.what());
+							replaceAll(except, "%client%", user->getNickname()) ;
+							replaceAll(except, "%command%", MSG_CLI_KICK) ;
+							try {
+								this->sendMsg(fd, except) ;
+							} catch (const std::exception &ex) {}
+						}
+					}
+				} catch(const std::exception& e) {
+					std::string except(e.what());
+					replaceAll(except, "%client%", user->getNickname()) ;
+					replaceAll(except, "%command%", MSG_CLI_KICK) ;
+					try {
+						this->sendMsg(fd, except) ;
+					} catch (const std::exception &ex) {}
+				}
 			}
 			else if (std::strncmp(message.c_str(), MSG_CLI_MODE, std::strlen(MSG_CLI_MODE)) == 0) {
 				try

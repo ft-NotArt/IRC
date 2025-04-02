@@ -50,6 +50,30 @@ void	Server::PART(const User *client, const std::string &channel, const std::str
 	this->sendMsg(client->getFd(), msg) ;
 }
 
+void	Server::KICK(const User *client, const std::string &channel, const std::string &kickedUser, const std::string &comment) {
+	Channel *chan = this->getChannel(channel) ;
+	if (!chan)
+		throw IrcException::NoSuchChannel(channel) ;
+
+	if (!chan->isUserIn(client))
+		throw IrcException::NotOnChannel(channel) ;
+
+	User *kicked = this->getUser(kickedUser) ;
+	if (!kicked)
+		throw IrcException::NoSuchNick(kickedUser) ;
+	
+	std::string msg(":") ;
+	msg += client->getNickname() ;
+	msg += " KICK " ;
+	msg += chan->getName() ;
+	msg += " " ;
+	msg += kickedUser ;
+	msg += " :" ;
+	msg += comment ;
+
+	chan->kick(client, kicked, msg) ;
+}
+
 // void Server::INVITE(const User *client, const std::vector<std::string> args)
 // {
 // 	(void) client;

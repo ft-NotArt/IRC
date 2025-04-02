@@ -98,6 +98,16 @@ void Channel::join(const User *user, const std::string &password) {
 	this->server.RPL_ENDOFNAMES(user, *this) ;
 }
 
+void	Channel::kick(const User *user, const User *kicked, const std::string &msg) {
+	if (!this->isUserIn(kicked))
+		throw IrcException::UserNotInChannel(this->name) ;
+	if (!(this->perms.at(user) & OPERATOR))
+		throw IrcException::ChanoPrivNeeded(this->name) ;
+	
+	this->server.sendMsg(kicked->getFd(), msg) ;
+	this->leave(kicked, msg) ;
+}
+
 void	Channel::leave(const User *user, const std::string &msg) {
 	if (this->perms.find(user) != this->perms.end())
 		this->perms.erase(user) ;
