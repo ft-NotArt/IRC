@@ -351,7 +351,7 @@ void	Server::processMsg(int fd) {
 				}
 				else if (command == MSG_CLI_PRIVMSG) {
 					try {
-						std::string tmp;
+						std::string tmp ;
 						std::getline(ssMessage, tmp, ':') ;
 						if (tmp.empty())
 							throw IrcException::NoRecipient() ;
@@ -388,39 +388,32 @@ void	Server::processMsg(int fd) {
 						} catch (const std::exception &ex) {}
 					}
 				}
-				else if (command == MSG_CLI_TOPIC) { // TODO: Not Working with new parsing
-					// try {
-					// 	std::size_t colon_pos = message.find(':') ;
+				else if (command == MSG_CLI_TOPIC) {
+					try {
+						std::string	channel;
+						std::getline(ssMessage, channel, ':') ;
+						channel = trim(channel);
 
-					// 	std::string	channel("") ;
-					// 	std::string	topic("") ;
-					// 	bool		modify ;
-					// 	if (colon_pos != std::string::npos) { // A new topic is given
-					// 		channel = trim(message.substr(std::strlen(MSG_CLI_TOPIC), colon_pos - std::strlen(MSG_CLI_TOPIC))) ;
-					// 		topic = trim(message.substr(colon_pos + 1)) ;
-					// 		modify = true ;
-					// 	}
-					// 	else { // No topic is given, user wants to see actual one
-					// 		channel = trim(message.substr(std::strlen(MSG_CLI_TOPIC))) ;
-					// 		modify = false ;
-					// 	}
+						if (channel.empty())
+							throw IrcException::NeedMoreParams() ;
+						else if (channel[0] != '#')
+							throw IrcException::BadChanMask(channel) ;
+						else if (!this->getChannel(channel))
+							throw IrcException::NoSuchChannel(channel) ;
 
-					// 	if (channel.empty())
-					// 		throw IrcException::NeedMoreParams() ;
-					// 	else if (channel[0] != '#')
-					// 		throw IrcException::BadChanMask(channel) ;
-					// 	else if (!this->getChannel(channel))
-					// 		throw IrcException::NoSuchChannel(channel) ;
+						std::string	topic;
+						std::getline(ssMessage, topic) ;
+						topic = trim(topic);
 
-					// 	this->TOPIC(user, channel, topic, modify) ;
-					// } catch(const std::exception& e) {
-					// 	std::string except(e.what());
-					// 	replaceAll(except, "%client%", user->getNickname()) ;
-					// 	replaceAll(except, "%command%", MSG_CLI_TOPIC) ;
-					// 	try {
-					// 		this->sendMsg(fd, except) ;
-					// 	} catch (const std::exception &ex) {}
-					// }
+						this->TOPIC(user, channel, topic, !topic.empty()) ;
+					} catch(const std::exception& e) {
+						std::string except(e.what());
+						replaceAll(except, "%client%", user->getNickname()) ;
+						replaceAll(except, "%command%", MSG_CLI_TOPIC) ;
+						try {
+							this->sendMsg(fd, except) ;
+						} catch (const std::exception &ex) {}
+					}
 				}
 				else if (command == MSG_CLI_KICK) { // TODO: Not Working with new parsing
 					// try {
