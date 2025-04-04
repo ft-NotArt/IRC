@@ -349,43 +349,36 @@ void	Server::processMsg(int fd) {
 					// 	} catch (const std::exception &ex) {}
 					// }
 				}
-				else if (command == MSG_CLI_PRIVMSG) { // Split logic `:` -> ` ` -> `,`
+				else if (command == MSG_CLI_PRIVMSG) {
 					try {
 						std::string tmp;
 						std::getline(ssMessage, tmp, ':') ;
+						if (tmp.empty())
+							throw IrcException::NoRecipient() ;
 
 						std::stringstream ssTargets(trim(tmp)) ;
-
-
 						std::vector<std::string> targets ;
 						while (std::getline(ssTargets, tmp, ','))
 							targets.push_back(tmp) ;
+						if (targets.empty())
+							throw IrcException::NoRecipient() ;
 
-						std::string messageStr;
-						std::getline(ssMessage, messageStr) ;
-						// /* DEBUG */ std::cout << YELLOW "[DBUG|CLI[" << fd << "]] PRIVMSG: Targets: ";
-						// /* DEBUG */ for (std::vector<std::string>::iterator it = targets.begin(); it != targets.end(); it++) {
-						// /* DEBUG */ 	std::cout << "`" << *it << "`";
-						// /* DEBUG */ }
-						// /* DEBUG */ std::cout << RESET << std::endl;
+						/* DEBUG */ std::cout << YELLOW << "[DBUG|CLI[" << fd << "]] PRIVMSG: Targets: ";
+						/* DEBUG */ for (std::vector<std::string>::iterator it = targets.begin(); it != targets.end(); it++) {
+						/* DEBUG */ 	std::cout << "`" << *it << "`";
+						/* DEBUG */ 	if (it != targets.end() - 1)
+						/* DEBUG */ 		std::cout << ", ";
+						/* DEBUG */ }
+						/* DEBUG */ std::cout << RESET << std::endl;
 
-						// if (targets.empty())
-						// 	throw IrcException::NoRecipient() ;
+						std::getline(ssMessage, tmp);
+						tmp = trim(tmp);
+						if (tmp.empty())
+							throw IrcException::NoTextToSend() ;
 
-						// std::getline(ssMessage, tmp);
-						// /* DEBUG */ std::cout << YELLOW "[DBUG|CLI[" << fd << "]] PRIVMSG: Text: `" << tmp << "`" << RESET << std::endl;
+						/* DEBUG */ std::cout << YELLOW "[DBUG|CLI[" << fd << "]] PRIVMSG: Text: `" << tmp << "`" << RESET << std::endl;
 
-						// std::getline(ssMessage, tmp, '\r');
-						// tmp = trim(tmp) ;
-						// if (tmp.empty() || tmp[0] != ':')
-						// 	throw IrcException::NoTextToSend() ;
-						// tmp.erase(0, 1) ;
-						// // tmp = trim(tmp) ;
-
-						// /* DEBUG */ std::cout << YELLOW "[DBUG|CLI[" << fd << "]] PRIVMSG: Text: `" << tmp << "`" << RESET << std::endl;
-
-						// this->PRIVMSG(user, targets, tmp) ;
-
+						this->PRIVMSG(user, targets, tmp) ;
 					} catch(const std::exception& e) {
 						std::string except(e.what());
 						replaceAll(except, "%client%", user->getNickname()) ;
