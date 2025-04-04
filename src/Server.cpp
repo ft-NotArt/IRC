@@ -307,47 +307,43 @@ void	Server::processMsg(int fd) {
 						} catch (const std::exception &ex) {}
 					}
 				}
-				else if (command == MSG_CLI_PART) { // TODO: Not working with new parsing
-					// try {
-					// 	std::size_t colon_pos = message.find(':') ;
+				else if (command == MSG_CLI_PART) {
+					try {
+						std::string strChannels;
+						std::getline(ssMessage, strChannels, ':') ;
+						strChannels = trim(strChannels) ;
+						if (strChannels.empty())
+							throw IrcException::NeedMoreParams() ;
 
-					// 	std::string reason("") ;
-					// 	if (colon_pos != std::string::npos)
-					// 		reason = trim(message.substr(colon_pos + 1)) ;
+						std::string reason;
+						std::getline(ssMessage, reason) ;
+						reason = trim(reason) ;
 
-					// 	std::string tmp ;
-					// 	if (colon_pos != std::string::npos)
-					// 		tmp = (trim(message.substr(std::strlen(MSG_CLI_PART), colon_pos - std::strlen(MSG_CLI_PART)))) ;
-					// 	else
-					// 		tmp = (trim(message.substr(std::strlen(MSG_CLI_PART)))) ;
-					// 	if (tmp.empty())
-					// 		throw IrcException::NeedMoreParams() ;
+						std::stringstream ssCchannels(strChannels) ;
+						std::string channel ;
+						while (std::getline(ssCchannels, channel, ',')) {
+							try {
+								if (channel[0] != '#')
+									throw IrcException::BadChanMask(channel) ;
 
-					// 	std::stringstream channels(tmp) ;
-					// 	std::string channel ;
-					// 	while (std::getline(channels, channel, ',')) {
-					// 		try {
-					// 			if (channel[0] != '#')
-					// 				throw IrcException::BadChanMask(channel) ;
-
-					// 			this->PART(user, channel, reason) ;
-					// 		} catch(const std::exception& e) {
-					// 			std::string except(e.what());
-					// 			replaceAll(except, "%client%", user->getNickname()) ;
-					// 			replaceAll(except, "%command%", MSG_CLI_PART) ;
-					// 			try {
-					// 				this->sendMsg(fd, except) ;
-					// 			} catch (const std::exception &ex) {}
-					// 		}
-					// 	}
-					// } catch(const std::exception& e) {
-					// 	std::string except(e.what());
-					// 	replaceAll(except, "%client%", user->getNickname()) ;
-					// 	replaceAll(except, "%command%", MSG_CLI_PART) ;
-					// 	try {
-					// 		this->sendMsg(fd, except) ;
-					// 	} catch (const std::exception &ex) {}
-					// }
+								this->PART(user, channel, reason) ;
+							} catch(const std::exception& e) {
+								std::string except(e.what());
+								replaceAll(except, "%client%", user->getNickname()) ;
+								replaceAll(except, "%command%", MSG_CLI_PART) ;
+								try {
+									this->sendMsg(fd, except) ;
+								} catch (const std::exception &ex) {}
+							}
+						}
+					} catch(const std::exception& e) {
+						std::string except(e.what());
+						replaceAll(except, "%client%", user->getNickname()) ;
+						replaceAll(except, "%command%", MSG_CLI_PART) ;
+						try {
+							this->sendMsg(fd, except) ;
+						} catch (const std::exception &ex) {}
+					}
 				}
 				else if (command == MSG_CLI_PRIVMSG) {
 					try {
