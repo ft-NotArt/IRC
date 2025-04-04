@@ -411,57 +411,52 @@ void	Server::processMsg(int fd) {
 						} catch (const std::exception &ex) {}
 					}
 				}
-				else if (command == MSG_CLI_KICK) { // TODO: Not Working with new parsing
-					// try {
-					// 	std::size_t colon_pos = message.find(':') ;
+				else if (command == MSG_CLI_KICK) {
+					try {
+						std::string tmp;
+						std::getline(ssMessage, tmp, ':') ;
+						tmp = trim(tmp) ;
 
-					// 	std::string comment ;
-					// 	if (colon_pos != std::string::npos)
-					// 		comment = trim(message.substr(colon_pos + 1)) ;
-					// 	else
-					// 		comment = "pas sage" ;
+						std::stringstream ssTmp(tmp) ;
+						std::string channel ;
+						ssTmp >> channel ;
+						if (channel.empty())
+							throw IrcException::NeedMoreParams() ;
 
-					// 	std::stringstream ss ;
-					// 	if (colon_pos != std::string::npos)
-					// 		ss.str(message.substr(std::strlen(MSG_CLI_KICK), colon_pos - std::strlen(MSG_CLI_KICK))) ;
-					// 	else
-					// 		ss.str(message.substr(std::strlen(MSG_CLI_KICK))) ;
+						ssTmp >> tmp ;
+						if (tmp.empty())
+							throw IrcException::NeedMoreParams() ;
 
-					// 	std::string channel ;
-					// 	ss >> channel ;
-					// 	if (channel.empty())
-					// 		throw IrcException::NeedMoreParams() ;
+						if (channel[0] != '#')
+							throw IrcException::BadChanMask(channel) ;
 
-					// 	std::string tmp ;
-					// 	ss >> tmp ;
-					// 	if (tmp.empty())
-					// 		throw IrcException::NeedMoreParams() ;
-					// 	std::stringstream users(tmp) ;
+						std::string comment ;
+						std::getline(ssMessage, comment) ;
+						comment = trim(comment) ;
+						if (comment.empty())
+							comment = "pas sage" ;
 
-					// 	std::string kickedUser ;
-					// 	while (std::getline(users, kickedUser, ',')) {
-					// 		try {
-					// 			if (channel[0] != '#')
-					// 				throw IrcException::BadChanMask(channel) ;
-
-					// 			this->KICK(user, channel, kickedUser, comment) ;
-					// 		} catch(const std::exception& e) {
-					// 			std::string except(e.what());
-					// 			replaceAll(except, "%client%", user->getNickname()) ;
-					// 			replaceAll(except, "%command%", MSG_CLI_KICK) ;
-					// 			try {
-					// 				this->sendMsg(fd, except) ;
-					// 			} catch (const std::exception &ex) {}
-					// 		}
-					// 	}
-					// } catch(const std::exception& e) {
-					// 	std::string except(e.what());
-					// 	replaceAll(except, "%client%", user->getNickname()) ;
-					// 	replaceAll(except, "%command%", MSG_CLI_KICK) ;
-					// 	try {
-					// 		this->sendMsg(fd, except) ;
-					// 	} catch (const std::exception &ex) {}
-					// }
+						ssTmp.str(tmp) ;
+						while (std::getline(ssTmp, tmp, ',')) {
+							try {
+								this->KICK(user, channel, tmp, comment) ;
+							} catch(const std::exception& e) {
+								std::string except(e.what());
+								replaceAll(except, "%client%", user->getNickname()) ;
+								replaceAll(except, "%command%", MSG_CLI_KICK) ;
+								try {
+									this->sendMsg(fd, except) ;
+								} catch (const std::exception &ex) {}
+							}
+						}
+					} catch(const std::exception& e) {
+						std::string except(e.what());
+						replaceAll(except, "%client%", user->getNickname()) ;
+						replaceAll(except, "%command%", MSG_CLI_KICK) ;
+						try {
+							this->sendMsg(fd, except) ;
+						} catch (const std::exception &ex) {}
+					}
 				}
 				else if (command == MSG_CLI_MODE) {
 					// try
