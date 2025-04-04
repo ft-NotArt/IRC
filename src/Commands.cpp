@@ -462,16 +462,16 @@ void Server::MODE(const User *client, const std::string &channel, const std::vec
 	if (!this->getChannel(channel))
 		throw IrcException::NoSuchNick(channel);
 
+	Channel *chan = this->getChannel(channel);
+
 	if (modesArgs.empty())
 	{
-		// Just display all the modes of the channel when there is no args, RPL_CHANNELMODEIS
+		this->RPL_CHANNELMODEIS(client, chan->getName(), chan->getModesString(), chan->getModesArgs());
 		return ;
 	}
 
-	bool inAdditionSign = true;
-
-	Channel *chan = this->getChannel(channel);
-	size_t argsIndex = 1;
+	bool		inAdditionSign = true;
+	size_t		argsIndex = 1;
 
 	for (size_t i = 0; i < modesArgs.at(0).size(); i++)
 	{
@@ -494,44 +494,35 @@ void Server::MODE(const User *client, const std::string &channel, const std::vec
 		switch (modesArgs.at(0)[i])
 		{
 			case 'i':
-			{
 				chan->setInviteOnly(inAdditionSign);
 				break;
-			}
 			case 't':
-			{
 				chan->setTopicRestrict(inAdditionSign);
 				break;
-			}
 			case 'k':
-			{
 				if (inAdditionSign)
 					chan->setPassword(modesArgs.at(argsIndex));
 				else
 					chan->setPassword("");
 				break;
-			}
 			case 'o':
-			{
 				if (inAdditionSign)
 					chan->addPerms(client, OPERATOR);
 				else
 					chan->removePerms(client, OPERATOR);
 				break;
-			}
 			case 'l':
-			{
 				if (inAdditionSign)
 					chan->setMaxUsers(atoi(modesArgs.at(argsIndex).c_str()));
 				else
 					chan->setMaxUsers(-1);
 				break;
-			}
 			default:
-			{
 				throw IrcException::UnknownMode();
-			}
 		}
+		if (modesArgs.size() > 1)
+			chan->setModesArgs(modesArgs.at(argsIndex) + " ");
 		argsIndex++;
 	}
+	chan->setModesString(modesArgs.at(0));
 }

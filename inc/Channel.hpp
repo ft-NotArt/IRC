@@ -29,6 +29,8 @@ class Channel {
 		std::pair<const User *, time_t>	topic_change ;
 		std::set<const User *>			users ;
 		std::map<const User *, uint8_t>	perms ;
+		std::string						modesString ;
+		std::string						modesArgs ;
 		int								max_users ;
 		bool							invite_only ;
 		bool							topic_restrict ;
@@ -47,6 +49,8 @@ class Channel {
 		bool									getTopicRestrict()	const 	{ return this->topic_restrict ; } ;
 		std::string								getUsers()			const	;
 		int										getUsersNb()		const	{ return this->users.size() ; } ;
+		std::string								getModesString()	const	{ return this->modesString ; } ;
+		std::string								getModesArgs()		const	{ return this->modesArgs ; } ;
 
 		bool									isUserIn(const User *user)	const ;
 
@@ -54,6 +58,8 @@ class Channel {
 		void	setMaxUsers(int max_users)									{ this->max_users = max_users ; } ;
 		void	setInviteOnly(bool invite_only)								{ this->invite_only = invite_only ; } ;
 		void	setTopicRestrict(bool topic_restrict)						{ this->topic_restrict = topic_restrict ; } ;
+		void	setModesString(const std::string &modesString)				{ this->modesString += modesString ; } ;
+		void	setModesArgs(const std::string &modesArgs)					{ this->modesArgs += modesArgs ; } ;
 
 		bool	hasPerms(const User *user, uint8_t perms) ;
 		void	addPerms(const User *user, uint8_t perms) ;

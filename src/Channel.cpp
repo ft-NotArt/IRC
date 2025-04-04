@@ -16,6 +16,8 @@ Channel::Channel(const std::string &name, const Server &server, const User *crea
 
 	this->password = "" ;
 	this->topic = "" ;
+	this->modesString = "" ;
+	this->modesArgs = "" ;
 	this->topic_change.first = NULL ;
 	this->topic_change.second = std::time(NULL) ;
 	this->max_users = -1 ;
