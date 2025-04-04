@@ -58,8 +58,15 @@ class IrcException {
 
 		/// @brief Returned as a reply to WHOWAS to indicate there is no history information for that nickname.
 		class WasNoSuckNick : public std::exception {
+			private:
+				std::string message ;
 			public:
-				virtual const char *what() const throw() { return ":Internet_Relay_Chat 406 %client% %nick% :There was no such nickname"; };
+				WasNoSuckNick(std::string nick) {
+					this->message = ":Internet_Relay_Chat 406 %client% " + nick + " :There was no such nickname" ;
+				}
+				virtual ~WasNoSuckNick() throw() {}
+			
+				virtual const char *what() const throw() { return this->message.c_str() ; };
 		};
 
 		/// @brief Returned by the PRIVMSG command to indicate the message wasn’t delivered because there was no recipient given.
@@ -100,14 +107,28 @@ class IrcException {
 
 		/// @brief Returned when a NICK command cannot be successfully completed as the desired nickname contains characters that are disallowed by the server. See the NICK command for more information on characters which are allowed in various IRC servers. The text used in the last param of this message may vary.
 		class ErroneusNickname : public std::exception {
+			private:
+				std::string message ;
 			public:
-				virtual const char *what() const throw() { return ":Internet_Relay_Chat 432 %client% %nick% :Erroneus nickname"; };
+				ErroneusNickname(std::string nick) {
+					this->message = ":Internet_Relay_Chat 432 %client% " + nick + " :Erroneus nickname" ;
+				}
+				virtual ~ErroneusNickname() throw() {}
+			
+				virtual const char *what() const throw() { return this->message.c_str() ; };
 		};
 
 		/// @brief Returned when a NICK command cannot be successfully completed as the desired nickname is already in use on the network. The text used in the last param of this message may vary.
 		class NicknameInUse : public std::exception {
+			private:
+				std::string message ;
 			public:
-				virtual const char *what() const throw() { return ":Internet_Relay_Chat 433 %client% %nick% :Nickname is already in use"; };
+				NicknameInUse(std::string nick) {
+					this->message = ":Internet_Relay_Chat 433 %client% " + nick + " :Nickname is already in use" ;
+				}
+				virtual ~NicknameInUse() throw() {}
+			
+				virtual const char *what() const throw() { return this->message.c_str() ; };
 		};
 
 		/// @brief Returned when a client tries to perform a channel+nick affecting command, when the nick isn’t joined to the channel (for example, MODE #channel +o nick).
@@ -115,8 +136,8 @@ class IrcException {
 			private:
 				std::string message ;
 			public:
-				UserNotInChannel(std::string channel) {
-					this->message = ":Internet_Relay_Chat 441 %client% %nick% " + channel + " :They aren't on that channel" ;
+				UserNotInChannel(std::string nick, std::string channel) {
+					this->message = ":Internet_Relay_Chat 441 %client% " + nick + " " + channel + " :They aren't on that channel" ;
 				}
 				virtual ~UserNotInChannel() throw() {}
 			
@@ -141,8 +162,8 @@ class IrcException {
 			private:
 				std::string message ;
 			public:
-				UserOnChannel(std::string channel) {
-					this->message = ":Internet_Relay_Chat 443 %client% %nick% " + channel + " :is already on channel" ;
+				UserOnChannel(std::string nick, std::string channel) {
+					this->message = ":Internet_Relay_Chat 443 %client% " + nick + " " + channel + " :is already on channel" ;
 				}
 				virtual ~UserOnChannel() throw() {}
 			

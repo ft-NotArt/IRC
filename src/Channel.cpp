@@ -100,7 +100,7 @@ void Channel::join(const User *user, const std::string &password) {
 
 void	Channel::kick(const User *user, const User *kicked, const std::string &msg) {
 	if (!this->isUserIn(kicked))
-		throw IrcException::UserNotInChannel(this->name) ;
+		throw IrcException::UserNotInChannel(user->getNickname(), this->name) ;
 	if (!(this->perms.at(user) & OPERATOR))
 		throw IrcException::ChanoPrivNeeded(this->name) ;
 	
