@@ -56,6 +56,7 @@ class Channel {
 		void	join(const User *user, const std::string &password) ;
 		void	leave(const User *user, const std::string &msg) ;
 		void	kick(const User *user, const User *kicked, const std::string &msg) ;
+		void	invite(const User *user, const User *invited) ;
 
 		void	changeTopic(const User *user, const std::string &topic) ;
 		void	sendTopic(const User *user) ;

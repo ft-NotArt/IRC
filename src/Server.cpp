@@ -488,7 +488,25 @@ void	Server::processMsg(int fd) {
 				// 	replaceAll(except, "%command%", MSG_CLI_MODE) ;
 				}
 				else if (command == MSG_CLI_INVITE) {
-					// this->INVITE(user, message.substr(std::strlen(MSG_CLI_INVITE))) ;
+					try {
+						std::string nickname, channel ;
+						ssMessage >> nickname ;
+						ssMessage >> channel ;
+
+						if (nickname.empty() || channel.empty())
+							throw IrcException::NeedMoreParams() ;
+						if (channel[0] != '#')
+							throw IrcException::BadChanMask(channel) ;
+						
+						this->INVITE(user, nickname, channel) ;
+					} catch(const std::exception& e) {
+						std::string except(e.what());
+						replaceAll(except, "%client%", user->getNickname()) ;
+						replaceAll(except, "%command%", MSG_CLI_INVITE) ;
+						try {
+							this->sendMsg(fd, except) ;
+						} catch (const std::exception &ex) {}
+					}
 				}
 				else if (command == MSG_CLI_NICK) {
 					// this->NICK(user, message.substr(std::strlen(MSG_CLI_NICK))) ;

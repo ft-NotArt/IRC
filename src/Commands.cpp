@@ -52,6 +52,27 @@ void	Server::PART(const User *client, const std::string &channel, const std::str
 	this->sendMsg(client->getFd(), msg) ;
 }
 
+void	Server::INVITE(const User *client, const std::string &nickname, const std::string &channel) {
+	Channel *chan = this->getChannel(channel) ;
+	if (!chan)
+		throw IrcException::NoSuchChannel(channel) ;
+	
+	User *invited = this->getUser(nickname) ;
+	if (!invited)
+		throw IrcException::NoSuchNick(nickname) ;
+	
+	std::string msg(":") ;
+	msg += client->getNickname() ;
+	msg += " INVITE " ;
+	msg += nickname ;
+	msg += " " ;
+	msg += channel ;
+
+	chan->invite(client, invited) ;
+	this->RPL_INVITING(client, invited, *chan) ;
+	this->sendMsg(invited->getFd(), msg) ;
+}
+
 void	Server::KICK(const User *client, const std::string &channel, const std::string &kickedUser, const std::string &comment) {
 	Channel *chan = this->getChannel(channel) ;
 	if (!chan)
@@ -75,24 +96,6 @@ void	Server::KICK(const User *client, const std::string &channel, const std::str
 
 	chan->kick(client, kicked, msg) ;
 }
-
-// void Server::INVITE(const User *client, const std::vector<std::string> args)
-// {
-// 	(void) client;
-// 	(void) args ;
-
-	// std::string target = args.at(0);
-	// std::string channel = args.at(1);
-
-	// if (channels.find(channel) == channels.end())
-	// {
-	// 	throw(IrcException::NoSuchChannel());
-	// }
-
-	// Check if client is in the channel or not ?
-
-	// Find target fd by name and let know the server if target is already in channel and if user does exist maybe in the order
-// }
 
 void Server::MODE(const User *client, const std::string &channel, const std::vector<std::string> &modesArgs)
 {

@@ -121,6 +121,17 @@ void	Channel::leave(const User *user, const std::string &msg) {
 	this->sendMsg(NULL, msg) ;
 }
 
+void	Channel::invite(const User *user, const User *invited) {
+	if (!this->isUserIn(user))
+		throw IrcException::NotOnChannel(this->getName()) ;
+	else if (this->isUserIn(invited))
+		throw IrcException::UserOnChannel(invited->getNickname(), this->getName()) ;
+	else if (this->invite_only && !(this->perms.at(user) & OPERATOR))
+		throw IrcException::ChanoPrivNeeded(this->name) ;
+	
+	this->perms.insert(std::pair<const User *, uint8_t>(invited, INVITED)) ;
+}
+
 void	Channel::changeTopic(const User *user, const std::string &topic) {
 	if (!this->isUserIn(user))
 		throw IrcException::NotOnChannel(this->getName()) ;
