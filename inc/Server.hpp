@@ -47,6 +47,19 @@ class User ;
 #define MSG_CLI_MODE		"MODE"
 #define MSG_CLI_INVITE		"INVITE"
 
+#define CONCAT(a, b) a##b
+#define CATCH_CMD(cmd)													\
+    catch(const std::exception& e) {									\
+        std::string except(e.what());									\
+        replaceAll(except, "%client%", user->getNickname());			\
+        replaceAll(except, "%command%", CONCAT(MSG_CLI_, cmd));			\
+        try {															\
+            this->sendMsg(fd, except);									\
+        } catch (const std::exception &ex) {}							\
+    }
+
+
+
 class Server {
 	private:
 		const std::string					password ;

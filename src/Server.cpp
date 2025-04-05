@@ -226,14 +226,7 @@ void	Server::processMsg(int fd) {
 					
 					/* DEBUG */ std::cout << YELLOW "[DBUG|CLI[" << fd << "]] Password: `" << password << "`" << std::endl;
 					user->setPassword(password) ;
-				} catch(const std::exception& e) {
-					std::string except(e.what());
-					replaceAll(except, "%client%", user->getNickname()) ;
-					replaceAll(except, "%command%", MSG_CLI_PASS) ;
-					try {
-						this->sendMsg(fd, except) ;
-					} catch (const std::exception &ex) {}
-				}
+				} CATCH_CMD(PASS)
 			}
 			else if (command == MSG_CLI_NICK) {
 				try {
@@ -250,14 +243,7 @@ void	Server::processMsg(int fd) {
 					
 					/* DEBUG */ std::cout << YELLOW "[DBUG|CLI[" << fd << "]] Nick: `" << nick << "`" << std::endl;
 					user->setNickname(nick) ;
-				} catch(const std::exception& e) {
-					std::string except(e.what());
-					replaceAll(except, "%client%", user->getNickname()) ;
-					replaceAll(except, "%command%", MSG_CLI_NICK) ;
-					try {
-						this->sendMsg(fd, except) ;
-					} catch (const std::exception &ex) {}
-				}
+				} CATCH_CMD(NICK)
 			}
 			else if (command == MSG_CLI_USER) {
 				std::string username;
@@ -320,24 +306,10 @@ void	Server::processMsg(int fd) {
 								if (channel[0] != '#')
 									throw IrcException::BadChanMask(channel) ;
 								this->JOIN(user, channel, key) ;
-							} catch(const std::exception& e) {
-								std::string except(e.what());
-								replaceAll(except, "%client%", user->getNickname()) ;
-								replaceAll(except, "%command%", MSG_CLI_JOIN) ;
-								try {
-									this->sendMsg(fd, except) ;
-								} catch (const std::exception &ex) {}
-							}
+							} CATCH_CMD(JOIN)
 							key.clear() ; // Reset to ensure we don't keep the key from before
 						}
-					} catch(const std::exception& e) {
-						std::string except(e.what());
-						replaceAll(except, "%client%", user->getNickname()) ;
-						replaceAll(except, "%command%", MSG_CLI_JOIN) ;
-						try {
-							this->sendMsg(fd, except) ;
-						} catch (const std::exception &ex) {}
-					}
+					} CATCH_CMD(JOIN)
 				}
 				else if (command == MSG_CLI_PART) {
 					try {
@@ -359,23 +331,9 @@ void	Server::processMsg(int fd) {
 									throw IrcException::BadChanMask(channel) ;
 
 								this->PART(user, channel, reason) ;
-							} catch(const std::exception& e) {
-								std::string except(e.what());
-								replaceAll(except, "%client%", user->getNickname()) ;
-								replaceAll(except, "%command%", MSG_CLI_PART) ;
-								try {
-									this->sendMsg(fd, except) ;
-								} catch (const std::exception &ex) {}
-							}
+							} CATCH_CMD(PART)
 						}
-					} catch(const std::exception& e) {
-						std::string except(e.what());
-						replaceAll(except, "%client%", user->getNickname()) ;
-						replaceAll(except, "%command%", MSG_CLI_PART) ;
-						try {
-							this->sendMsg(fd, except) ;
-						} catch (const std::exception &ex) {}
-					}
+					} CATCH_CMD(PART)
 				}
 				else if (command == MSG_CLI_PRIVMSG) {
 					try {
@@ -407,14 +365,7 @@ void	Server::processMsg(int fd) {
 						/* DEBUG */ std::cout << YELLOW "[DBUG|CLI[" << fd << "]] PRIVMSG: Text: `" << tmp << "`" << RESET << std::endl;
 
 						this->PRIVMSG(user, targets, tmp) ;
-					} catch(const std::exception& e) {
-						std::string except(e.what());
-						replaceAll(except, "%client%", user->getNickname()) ;
-						replaceAll(except, "%command%", MSG_CLI_PRIVMSG) ;
-						try {
-							this->sendMsg(fd, except) ;
-						} catch (const std::exception &ex) {}
-					}
+					} CATCH_CMD(PRIVMSG)
 				}
 				else if (command == MSG_CLI_TOPIC) {
 					try {
@@ -434,14 +385,7 @@ void	Server::processMsg(int fd) {
 						topic = trim(topic);
 
 						this->TOPIC(user, channel, topic, !topic.empty()) ;
-					} catch(const std::exception& e) {
-						std::string except(e.what());
-						replaceAll(except, "%client%", user->getNickname()) ;
-						replaceAll(except, "%command%", MSG_CLI_TOPIC) ;
-						try {
-							this->sendMsg(fd, except) ;
-						} catch (const std::exception &ex) {}
-					}
+					} CATCH_CMD(TOPIC)
 				}
 				else if (command == MSG_CLI_KICK) {
 					try {
@@ -472,23 +416,9 @@ void	Server::processMsg(int fd) {
 						while (std::getline(ssTmp, tmp, ',')) {
 							try {
 								this->KICK(user, channel, tmp, comment) ;
-							} catch(const std::exception& e) {
-								std::string except(e.what());
-								replaceAll(except, "%client%", user->getNickname()) ;
-								replaceAll(except, "%command%", MSG_CLI_KICK) ;
-								try {
-									this->sendMsg(fd, except) ;
-								} catch (const std::exception &ex) {}
-							}
+							} CATCH_CMD(KICK)
 						}
-					} catch(const std::exception& e) {
-						std::string except(e.what());
-						replaceAll(except, "%client%", user->getNickname()) ;
-						replaceAll(except, "%command%", MSG_CLI_KICK) ;
-						try {
-							this->sendMsg(fd, except) ;
-						} catch (const std::exception &ex) {}
-					}
+					} CATCH_CMD(KICK)
 				}
 				else if (command == MSG_CLI_MODE) {
 					// try
@@ -531,14 +461,7 @@ void	Server::processMsg(int fd) {
 							throw IrcException::BadChanMask(channel) ;
 						
 						this->INVITE(user, nickname, channel) ;
-					} catch(const std::exception& e) {
-						std::string except(e.what());
-						replaceAll(except, "%client%", user->getNickname()) ;
-						replaceAll(except, "%command%", MSG_CLI_INVITE) ;
-						try {
-							this->sendMsg(fd, except) ;
-						} catch (const std::exception &ex) {}
-					}
+					} CATCH_CMD(INVITE)
 				}
 			}
 		} catch (const std::exception &e) {
