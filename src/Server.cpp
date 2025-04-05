@@ -166,13 +166,13 @@ void	Server::receiveMsg(int fd) {
 	int readBytes = recv(fd, buff, sizeof(buff) - 1, 0);
 
 	if (readBytes < 0) {
-		std::cerr << "read error on fd " << fd << ": " << strerror(errno) << std::endl;
-		this->QUIT(this->getUserByFd(fd), "read error", false);
-		return;
+		std::cerr << "read error on fd " << fd << ": " << strerror(errno) << std::endl ;
+		this->QUIT(this->getUserByFd(fd), "read error", false) ;
+		return ;
 	}
 	if (readBytes == 0) {
-		this->QUIT(this->getUserByFd(fd), "test", false); // FIXME: Why should we close here ? Prolly will be handled by QUIT
-		return;
+		this->QUIT(this->getUserByFd(fd), "test", false) ;
+		return ;
 	}
 
 	buff[readBytes] = '\0';
@@ -214,11 +214,26 @@ void	Server::processMsg(int fd) {
 				}
 			}
 			else if (command == MSG_CLI_PASS) {
-				std::string password;
-				ssMessage >> password;
-
-				/* DEBUG */ std::cout << YELLOW "[DBUG|CLI[" << fd << "]] Password: `" << password << "`" << std::endl;
-				user->setPassword(password) ;
+				try {
+					std::string password ;
+					std::getline(ssMessage, password) ;
+					password = trim(password) ;
+					
+					if (password.empty())
+						throw IrcException::NeedMoreParams() ;
+					else if (user->isRegistered())
+						throw IrcException::AlreadyRegistered() ;
+					
+					/* DEBUG */ std::cout << YELLOW "[DBUG|CLI[" << fd << "]] Password: `" << password << "`" << std::endl;
+					user->setPassword(password) ;
+				} catch(const std::exception& e) {
+					std::string except(e.what());
+					replaceAll(except, "%client%", user->getNickname()) ;
+					replaceAll(except, "%command%", MSG_CLI_PASS) ;
+					try {
+						this->sendMsg(fd, except) ;
+					} catch (const std::exception &ex) {}
+				}
 			}
 			else if (command == MSG_CLI_NICK) {
 				try {
