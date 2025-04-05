@@ -1,7 +1,5 @@
 #include "Server.hpp"
 
-// TODO: delete channel if nobody in anymore
-
 void	Server::QUIT(const User *client, const std::string &reason, bool requested) {
 	this->MSG_ERROR(client, reason) ;
 
@@ -15,6 +13,10 @@ void	Server::QUIT(const User *client, const std::string &reason, bool requested)
 	for (std::map<std::string, Channel *>::iterator it = this->channels.begin(); it != this->channels.end(); it++) {
 		try {
 			(*it).second->leave(client, msg) ;
+				if ((*it).second->getUsersNb() == 0) {
+					delete (*it).second ;
+					this->channels.erase((*it).first) ;
+				}
 		} catch(const std::exception& e) {}
 	}
 
@@ -50,6 +52,11 @@ void	Server::PART(const User *client, const std::string &channel, const std::str
 
 	chan->leave(client, msg) ;
 	this->sendMsg(client->getFd(), msg) ;
+
+	if (chan->getUsersNb() == 0) {
+		delete chan ;
+		this->channels.erase(channel) ;
+	}
 }
 
 void	Server::INVITE(const User *client, const std::string &nickname, const std::string &channel) {

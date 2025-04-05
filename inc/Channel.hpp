@@ -46,6 +46,7 @@ class Channel {
 		int										getMaxUsers()		const	{ return this->max_users ; } ;
 		bool									getTopicRestrict()	const 	{ return this->topic_restrict ; } ;
 		std::string								getUsers()			const	;
+		int										getUsersNb()		const	{ return this->users.size() ; } ;
 
 		bool									isUserIn(const User *user)	const ;
 

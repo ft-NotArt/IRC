@@ -37,8 +37,6 @@ class User ;
 #define MSG_CLI_NICK		"NICK"
 #define MSG_CLI_USER		"USER"
 
-// FIXME: the space at the end prevent us from detecting the msg as a cmd if no args (ex: "JOIN", no spaces)
-
 #define MSG_CLI_PING		"PING"
 #define MSG_CLI_QUIT		"QUIT"
 #define MSG_CLI_JOIN		"JOIN"
