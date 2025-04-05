@@ -221,11 +221,28 @@ void	Server::processMsg(int fd) {
 				user->setPassword(password) ;
 			}
 			else if (command == MSG_CLI_NICK) {
-				std::string nick;
-				ssMessage >> nick;
+				try {
+					std::string nick ;
+					std::getline(ssMessage, nick) ;
+					nick = trim(nick) ;
 
-				/* DEBUG */ std::cout << YELLOW "[DBUG|CLI[" << fd << "]] Nick: `" << nick << "`" << std::endl;
-				user->setNickname(nick) ;
+					if (nick.empty())
+						throw IrcException::NoNicknameGiven() ;
+					else if (nick[0] == '#' || nick.find(' ') || nick.find(':'))
+						throw IrcException::ErroneusNickname(nick) ;
+					else if (this->getUser(nick))
+						throw IrcException::NicknameInUse(nick) ;
+					
+					/* DEBUG */ std::cout << YELLOW "[DBUG|CLI[" << fd << "]] Nick: `" << nick << "`" << std::endl;
+					user->setNickname(nick) ;
+				} catch(const std::exception& e) {
+					std::string except(e.what());
+					replaceAll(except, "%client%", user->getNickname()) ;
+					replaceAll(except, "%command%", MSG_CLI_NICK) ;
+					try {
+						this->sendMsg(fd, except) ;
+					} catch (const std::exception &ex) {}
+				}
 			}
 			else if (command == MSG_CLI_USER) {
 				std::string username;
@@ -507,9 +524,6 @@ void	Server::processMsg(int fd) {
 							this->sendMsg(fd, except) ;
 						} catch (const std::exception &ex) {}
 					}
-				}
-				else if (command == MSG_CLI_NICK) {
-					// this->NICK(user, message.substr(std::strlen(MSG_CLI_NICK))) ;
 				}
 			}
 		} catch (const std::exception &e) {
