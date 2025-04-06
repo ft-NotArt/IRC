@@ -89,6 +89,7 @@ class IrcException {
 
 		/// @brief Sent to a registered client to indicate that the command they sent isn’t known by the server. The text used in the last param of this message may vary.
 		class UnknownCommand : public std::exception {
+			//TODO : put "command" as a constructor parameter here
 			public:
 				virtual const char *what() const throw() { return ":Internet_Relay_Chat 421 %client% %command% :Unknown command"; };
 		};

@@ -30,9 +30,7 @@ class User ;
 #define MAX_EVENTS 10
 #define BUFFER_SIZE 1024
 
-#define MSG_CLI_CAP_LS		"CAP LS"
-#define MSG_CLI_CAP_REQ		"CAP REQ"
-#define MSG_CLI_CAP_END		"CAP END"
+#define MSG_CLI_CAP			"CAP"
 #define MSG_CLI_PASS		"PASS"
 #define MSG_CLI_NICK		"NICK"
 #define MSG_CLI_USER		"USER"
@@ -54,7 +52,7 @@ class User ;
         replaceAll(except, "%client%", user->getNickname());			\
         replaceAll(except, "%command%", CONCAT(MSG_CLI_, cmd));			\
         try {															\
-            this->sendMsg(fd, except);									\
+            this->sendMsg(user->getFd(), except);						\
         } catch (const std::exception &ex) {}							\
     }
 
@@ -97,14 +95,38 @@ class Server {
 		void 	sendMsg(int fd, std::string msg) const ;
 
 		// Commands
+		void	handleCAP(std::stringstream &ssMessage, User *user) ;
+
+		void	handlePASS(std::stringstream &ssMessage, User *user) ;
+		
+		void	handleNICK(std::stringstream &ssMessage, User *user) ;
+		
+		void	handleUSER(std::stringstream &ssMessage, User *user) ;
+		
+		void	handlePING(std::stringstream &ssMessage, User *user) ;
+		
+		void	handleQUIT(std::stringstream &ssMessage, User *user) ;
 		void	QUIT(const User *client, const std::string &reason, bool requested);
+		
+		void	handlePRIVMSG(std::stringstream &ssMessage, User *user) ;
 		void 	PRIVMSG(const User *client, const std::vector<std::string> targets, std::string text);
+		
+		void	handleJOIN(std::stringstream &ssMessage, User *user) ;
 		void 	JOIN(const User *client, const std::string &channel, const std::string &key);
-		void	PART(const User *client, const std::string &channel, const std::string &reason);
+		
+		void	handleINVITE(std::stringstream &ssMessage, User *user) ;
 		void	INVITE(const User *client, const std::string &nickname, const std::string &channel);
+
+		void	handlePART(std::stringstream &ssMessage, User *user) ;
+		void	PART(const User *client, const std::string &channel, const std::string &reason);
+		
+		void	handleKICK(std::stringstream &ssMessage, User *user) ;
 		void	KICK(const User *client, const std::string &channel, const std::string &kickedUser, const std::string &comment);
-		void	MODE(const User *client, const std::string &channel, const std::vector<std::string> &modesArgs);
+		
+		void	handleTOPIC(std::stringstream &ssMessage, User *user) ;
 		void	TOPIC(const User *client, const std::string &channel, const std::string &topic, bool modify);
+		
+		void	MODE(const User *client, const std::string &channel, const std::vector<std::string> &modesArgs);
 
 		// Replies
 		void	greetings(const User *client)																						const ;
