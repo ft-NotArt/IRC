@@ -62,7 +62,7 @@ void	Server::handleNICK(std::stringstream &ssMessage, User *user) {
 
 		if (nick.empty())
 			throw IrcException::NoNicknameGiven() ;
-		else if (nick[0] == '#' || nick.find(' ') || nick.find(':'))
+		else if (nick[0] == '#' || nick.find(' ') != std::string::npos || nick.find(':') != std::string::npos)
 			throw IrcException::ErroneusNickname(nick) ;
 		else if (this->getUser(nick))
 			throw IrcException::NicknameInUse(nick) ;
