@@ -131,14 +131,18 @@ void	Server::QUIT(const User *client, const std::string &reason, bool requested)
 		msg += "Quit: " ;
 	msg += reason ;
 
-	for (std::map<std::string, Channel *>::iterator it = this->channels.begin(); it != this->channels.end(); it++) {
+	for (std::map<std::string, Channel *>::iterator it = this->channels.begin(); it != this->channels.end(); ) {
 		try {
-			(*it).second->leave(client, msg) ;
-				if ((*it).second->getUsersNb() == 0) {
-					delete (*it).second ;
-					this->channels.erase((*it).first) ;
-				}
-		} catch(const std::exception& e) {}
+			it->second->leave(client, msg) ;
+			if (it->second->getUsersNb() == 0) {
+				delete it->second ;
+				this->channels.erase(it++) ;
+			} else {
+				it++ ;
+			}
+		} catch (const std::exception& e) {
+			it++ ;
+		}
 	}
 
 	this->closeClient(client->getFd()) ;
