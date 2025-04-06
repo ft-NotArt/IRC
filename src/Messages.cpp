@@ -11,7 +11,8 @@ void	Server::MSG_CAP_LS(const User *client) const {
 	msg += client->getNickname() ;
 	msg += " " ;
 
-	msg += "CAP * LS :multi-prefix" ;
+	msg += "CAP * LS :" ;
+	msg += SERVER_CAP ;
 
 	this->sendMsg(client->getFd(), msg) ;
 }

@@ -21,11 +21,14 @@ void	Server::handleCAP(std::stringstream &ssMessage, User *user) {
 	std::string capName;
 	ssMessage >> capName;
 
-	if (capName == MSG_CLI_CAP_LS) {
+	if (capName == MSG_CLI_CAP_LS)
 		this->MSG_CAP_LS(user);
-	}
 	else if (capName == MSG_CLI_CAP_REQ) {
-		this->MSG_CAP_ACK(user, SERVER_CAP) ; // TODO: Refactor for better implementation
+		std::string requested_cap ;
+		std::getline(ssMessage, requested_cap) ;
+
+		if (requested_cap.find(SERVER_CAP))
+			this->MSG_CAP_ACK(user, SERVER_CAP) ;
 	}
 	else if (capName == MSG_CLI_CAP_END) {
 		user->setRequestCap(true) ;
