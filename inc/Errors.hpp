@@ -89,9 +89,15 @@ class IrcException {
 
 		/// @brief Sent to a registered client to indicate that the command they sent isn’t known by the server. The text used in the last param of this message may vary.
 		class UnknownCommand : public std::exception {
-			//TODO : put "command" as a constructor parameter here
+			private:
+				std::string message ;
 			public:
-				virtual const char *what() const throw() { return ":Internet_Relay_Chat 421 %client% %command% :Unknown command"; };
+				UnknownCommand(std::string command) {
+					this->message = ":Internet_Relay_Chat 421 %client% " + command + " :Unknown command" ;
+				}
+				virtual ~UnknownCommand() throw() {}
+			
+				virtual const char *what() const throw() { return this->message.c_str() ; };
 		};
 
 		/// @brief Indicates that the Message of the Day file does not exist or could not be found. The text used in the last param of this message may vary.
