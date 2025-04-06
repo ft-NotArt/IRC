@@ -301,7 +301,8 @@ void	Server::processMsg(int fd) {
 
 						std::string channel ;
 						std::string key ;
-						while (std::getline(channels, channel, ',') && std::getline(keys, key, ',')) {
+						while (std::getline(channels, channel, ',')) {
+							std::getline(keys, key, ',') ;
 							try {
 								if (channel[0] != '#')
 									throw IrcException::BadChanMask(channel) ;
