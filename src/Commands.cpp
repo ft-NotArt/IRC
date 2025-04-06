@@ -17,18 +17,17 @@
 
 /* CAP */
 
-// TODO: use defines for those strings
 void	Server::handleCAP(std::stringstream &ssMessage, User *user) {
 	std::string capName;
 	ssMessage >> capName;
 
-	if (capName == "LS") {
+	if (capName == MSG_CLI_CAP_LS) {
 		this->MSG_CAP_LS(user);
 	}
-	else if (capName == "REQ") {
-		this->MSG_CAP_ACK(user, "multi-prefix") ; // TODO: Refactor for better implementation
+	else if (capName == MSG_CLI_CAP_REQ) {
+		this->MSG_CAP_ACK(user, SERVER_CAP) ; // TODO: Refactor for better implementation
 	}
-	else if (capName == "END") {
+	else if (capName == MSG_CLI_CAP_END) {
 		user->setRequestCap(true) ;
 		if (!user->getUsername().empty())
 			this->greetings(user);

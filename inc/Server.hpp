@@ -25,12 +25,16 @@ class User ;
 
 #define SERVER_NAME		"Internet_Relay_Chat"
 #define SERVER_VERSION	"2.0"
+#define	SERVER_CAP		"multi-prefix"
 
 #define MAX_CONNECTIONS 5
 #define MAX_EVENTS 10
 #define BUFFER_SIZE 1024
 
 #define MSG_CLI_CAP			"CAP"
+#define MSG_CLI_CAP_LS		"LS"
+#define MSG_CLI_CAP_REQ		"REQ"
+#define MSG_CLI_CAP_END		"END"
 #define MSG_CLI_PASS		"PASS"
 #define MSG_CLI_NICK		"NICK"
 #define MSG_CLI_USER		"USER"
