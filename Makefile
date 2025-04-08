@@ -18,7 +18,7 @@ CXXFLAGS	=	-Wall -Wextra -Werror -g -std=c++98 -Iinc
 
 # FILES
 
-FILES		=	main Server Channel User Reply Messages Commands
+FILES		=	main Server Channel Reply Messages Commands
 
 SRC			=	$(addsuffix .cpp, $(FILES))
 OBJ			=	$(addsuffix .o, $(addprefix src/, $(FILES)))
