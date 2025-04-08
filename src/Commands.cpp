@@ -459,6 +459,9 @@ void	Server::TOPIC(const User *client, const std::string &channel, const std::st
 // Find target fd by name and let know the server if target is already in channel and if user does exist maybe in the order
 void Server::MODE(const User *client, const std::string &channel, const std::vector<std::string> &modesArgs)
 {
+
+	// TODO Fix exception when doing /mode #test +oi user1
+
 	if (!this->getChannel(channel))
 		throw IrcException::NoSuchNick(channel);
 
@@ -506,10 +509,12 @@ void Server::MODE(const User *client, const std::string &channel, const std::vec
 					chan->setPassword("");
 				break;
 			case 'o':
+				if (!chan->isUserIn(getUser(modesArgs.at(argsIndex))))
+					throw IrcException::UserNotInChannel(modesArgs.at(argsIndex));
 				if (inAdditionSign)
-					chan->addPerms(client, OPERATOR);
+					chan->addPerms(getUser(modesArgs.at(argsIndex)), OPERATOR);
 				else
-					chan->removePerms(client, OPERATOR);
+					chan->removePerms(getUser(modesArgs.at(argsIndex)), OPERATOR);
 				break;
 			case 'l':
 				if (inAdditionSign)
@@ -520,9 +525,8 @@ void Server::MODE(const User *client, const std::string &channel, const std::vec
 			default:
 				throw IrcException::UnknownMode();
 		}
-		if (modesArgs.size() > 1)
-			chan->setModesArgs(modesArgs.at(argsIndex) + " ");
 		argsIndex++;
+		chan->setModesArgs(modesArgs.at(argsIndex) + " ");
 	}
 	chan->setModesString(modesArgs.at(0));
 }
