@@ -2,6 +2,7 @@
 
 #include "Server.hpp"
 
+extern volatile int running ;
 
 /* Temp */
 #define GREEN "\e[1;32m"
@@ -42,6 +43,10 @@ Server::Server(const std::string &password, const int port) : password(password)
 /* Destructor */
 
 Server::~Server(void) {
+	for (std::map<int, User *>::iterator it = this->users.begin(); it != this->users.end(); ) {
+		this->QUIT((it++)->second, "Server closed.", false) ;
+	}
+
 	epoll_ctl(this->epollFd, EPOLL_CTL_DEL, this->socket, &(this->event));
 
 	close(this->epollFd);
@@ -96,7 +101,7 @@ void Server::start(void) {
 }
 
 void Server::run(void) {
-	while (true) {
+	while (running) {
 		std::cout << std::endl << CYAN "[DBUG|SERVER] Waiting for events..." << std::endl;
 
 		int numEvents = epoll_wait(this->epollFd, this->events, MAX_EVENTS, -1);
