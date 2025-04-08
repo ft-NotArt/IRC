@@ -58,8 +58,8 @@ class Channel {
 		void	setMaxUsers(int max_users)									{ this->max_users = max_users ; } ;
 		void	setInviteOnly(bool invite_only)								{ this->invite_only = invite_only ; } ;
 		void	setTopicRestrict(bool topic_restrict)						{ this->topic_restrict = topic_restrict ; } ;
-		void	setModesString(const std::string &modesString)				{ this->modesString += modesString ; } ; // TODO: replace set->add
-		void	setModesArgs(const std::string &modesArgs)					{ this->modesArgs += modesArgs ; } ;
+		void	addModesString(const std::string &modesString)				{ this->modesString += modesString ; } ;
+		void	addModesArgs(const std::string &modesArgs)					{ this->modesArgs += modesArgs ; } ;
 
 		bool	hasPerms(const User *user, uint8_t perms) ;
 		void	addPerms(const User *user, uint8_t perms) ;

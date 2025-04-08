@@ -543,7 +543,7 @@ void	Server::MODE(const User *client, const std::string &channel, const std::vec
 		}
 
 		if (argsIndex < modesArgs.size()) // TODO: verify
-			chan->setModesArgs(modesArgs.at(argsIndex) + " ");
+			chan->addModesArgs(modesArgs.at(argsIndex) + " ");
 	}
-	chan->setModesString(modesArgs.at(0));
+	chan->addModesString(modesArgs.at(0));
 }
