@@ -456,54 +456,60 @@ void	Server::TOPIC(const User *client, const std::string &channel, const std::st
 
 /* MODE */
 
-// Find target fd by name and let know the server if target is already in channel and if user does exist maybe in the order
-void Server::MODE(const User *client, const std::string &channel, const std::vector<std::string> &modesArgs)
-{
-	if (!this->getChannel(channel))
-		throw IrcException::NoSuchNick(channel);
+void	Server::handleMODE(std::stringstream &ssMessage, User *user) {
+	try {
+		std::string channel ;
+		ssMessage >> channel ;
 
+		std::vector<std::string> modesArgs ;
+		std::string tmp ;
+		while (ssMessage >> tmp) {
+			modesArgs.push_back(tmp) ;
+		}
+		
+		this->MODE(user, channel, modesArgs) ;
+	} CATCH_CMD(MODE)	
+}
+
+void	Server::MODE(const User *client, const std::string &channel, const std::vector<std::string> &modesArgs) {
 	Channel *chan = this->getChannel(channel);
+	if (!chan)
+		throw IrcException::NoSuchChannel(channel) ;
 
-	if (modesArgs.empty())
-	{
+	if (!chan->isUserIn(client))
+		throw IrcException::NotOnChannel(chan->getName());
+	else if (!chan->hasPerms(client, OPERATOR))
+		throw IrcException::ChanoPrivNeeded(chan->getName());
+	
+	if (modesArgs.empty()) {
 		this->RPL_CHANNELMODEIS(client, chan->getName(), chan->getModesString(), chan->getModesArgs());
 		return;
 	}
 
-	bool inAdditionSign = true;
+	bool addOrRm = true;
 	size_t argsIndex = 1;
 
-	for (size_t i = 0; i < modesArgs.at(0).size(); i++)
-	{
+	for (size_t i = 0; i < modesArgs.at(0).size(); i++) {
 		char mode = modesArgs.at(0)[i];
 
-		if (mode == '-' || mode == '+')
-		{
-			inAdditionSign = (mode == '+');
+		if (mode == '-' || mode == '+') {
+			addOrRm = (mode == '+');
 			continue;
 		}
 
-		if (!chan->isUserIn(client))
-			throw IrcException::NotOnChannel(chan->getName());
-		if (!chan->hasPerms(client, OPERATOR))
-			throw IrcException::ChanoPrivNeeded(chan->getName());
-
-		switch (mode)
-		{
+		switch (mode) {
 			case 'i':
-				chan->setInviteOnly(inAdditionSign);
+				chan->setInviteOnly(addOrRm);
 				break;
 			case 't':
-				chan->setTopicRestrict(inAdditionSign);
+				chan->setTopicRestrict(addOrRm);
 				break;
 			case 'k':
-				if (inAdditionSign)
-				{
+				if (addOrRm) {
 					if (argsIndex >= modesArgs.size())
 						throw IrcException::NeedMoreParams();
 					chan->setPassword(modesArgs.at(argsIndex));
-				}
-				else
+				} else
 					chan->setPassword("");
 				argsIndex++;
 				break;
@@ -511,18 +517,18 @@ void Server::MODE(const User *client, const std::string &channel, const std::vec
 			{
 				if (argsIndex >= modesArgs.size())
 					throw IrcException::NeedMoreParams();
-				User* target = getUser(modesArgs.at(argsIndex));
+				User *target = getUser(modesArgs.at(argsIndex));
+				if (!target)
+					throw IrcException::NoSuchNick(modesArgs.at(argsIndex)) ;
 				if (!chan->isUserIn(target))
-					throw IrcException::UserNotInChannel(modesArgs.at(argsIndex));
-				if (inAdditionSign)
-					chan->addPerms(target, OPERATOR);
-				else
-					chan->removePerms(target, OPERATOR);
+					throw IrcException::UserNotInChannel(modesArgs.at(argsIndex), channel);
+				
+				addOrRm ? chan->addPerms(target, OPERATOR) : chan->removePerms(target, OPERATOR);
 				argsIndex++;
 				break;
 			}
 			case 'l':
-				if (inAdditionSign)
+				if (addOrRm)
 				{
 					if (argsIndex >= modesArgs.size())
 						throw IrcException::NeedMoreParams();
@@ -535,7 +541,8 @@ void Server::MODE(const User *client, const std::string &channel, const std::vec
 			default:
 				throw IrcException::UnknownMode();
 		}
-		if (argsIndex < modesArgs.size())
+
+		if (argsIndex < modesArgs.size()) // TODO: verify
 			chan->setModesArgs(modesArgs.at(argsIndex) + " ");
 	}
 	chan->setModesString(modesArgs.at(0));

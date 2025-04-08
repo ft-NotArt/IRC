@@ -231,7 +231,9 @@ void	Server::processMsg(int fd) {
 				else if (command == MSG_CLI_KICK)
 					this->handleKICK(ssMessage, user) ;
 				else if (command == MSG_CLI_MODE) {
-					// try
+					this->handleMODE(ssMessage, user) ;
+				}
+				// 	try
 				// {
 				// 	//  TODO handle when /mode only is sent, Irssi is the only one sending the message
 				// 	std::stringstream ss(message.substr(std::strlen(MSG_CLI_MODE)));
@@ -258,7 +260,7 @@ void	Server::processMsg(int fd) {
 				// 	std::string except(e.what());
 				// 	replaceAll(except, "%client%", user->getNickname()) ;
 				// 	replaceAll(except, "%command%", MSG_CLI_MODE) ;
-				}
+				// }
 			}
 		} catch (const Server::DisconnectClient &e) {
 			this->QUIT(user, e.what(), false) ;

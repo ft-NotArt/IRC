@@ -131,21 +131,22 @@ class Server {
 		void	handleTOPIC(std::stringstream &ssMessage, User *user) ;
 		void	TOPIC(const User *client, const std::string &channel, const std::string &topic, bool modify);
 		
+		void	handleMODE(std::stringstream &ssMessage, User *user) ;
 		void	MODE(const User *client, const std::string &channel, const std::vector<std::string> &modesArgs);
 
 		// Replies
-		void	greetings(const User *client)																						const ;
-		void	RPL_WELCOME(const User *client)																						const ;
-		void	RPL_YOURHOST(const User *client)																					const ;
-		void	RPL_CREATED(const User *client)																						const ;
-		void	RPL_NAMREPLY(const User *client, const Channel &channel)															const ;
-		void	RPL_ENDOFNAMES(const User *client, const Channel &channel)															const ;
-		void	RPL_INVITING(const User *client, const User *invited, const Channel &channel)										const ;
-		void	RPL_TOPIC(const User *client, const Channel &channel)																const ;
-		void	RPL_NOTOPIC(const User *client, const Channel &channel)																const ;
-		void	RPL_TOPICWHOTIME(const User *client, const Channel &channel)														const ;
-		void	RPL_CHANNELMODEIS(const User *client, const Channel &channel, const std::string modes, const std::string params)	const ;
-		void	RPL_YOUREOPER(const User *client)																					const ;
+		void	greetings(const User *client)																							const ;
+		void	RPL_WELCOME(const User *client)																							const ;
+		void	RPL_YOURHOST(const User *client)																						const ;
+		void	RPL_CREATED(const User *client)																							const ;
+		void	RPL_NAMREPLY(const User *client, const Channel &channel)																const ;
+		void	RPL_ENDOFNAMES(const User *client, const Channel &channel)																const ;
+		void	RPL_INVITING(const User *client, const User *invited, const Channel &channel)											const ;
+		void	RPL_TOPIC(const User *client, const Channel &channel)																	const ;
+		void	RPL_NOTOPIC(const User *client, const Channel &channel)																	const ;
+		void	RPL_TOPICWHOTIME(const User *client, const Channel &channel)															const ;
+		void	RPL_CHANNELMODEIS(const User *client, const std::string &channel, const std::string modes, const std::string params)	const ;
+		void	RPL_YOUREOPER(const User *client)																						const ;
 
 		// Messages
 		void	MSG_CAP_LS(const User *client)													const ;
