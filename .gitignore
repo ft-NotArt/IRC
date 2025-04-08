@@ -6,6 +6,7 @@
 *.out
 
 IRC
+bot/Bot
 
 .tests/
 .vscode/
