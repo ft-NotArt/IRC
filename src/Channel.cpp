@@ -68,8 +68,8 @@ void Channel::join(const User *user, const std::string &password) {
 
 	if (this->invite_only) {
 		try {
-			// if (!(this->perms.at(user) & INVITED))
-			// 	; // return
+			if (!(this->perms.at(user) & INVITED))
+				return ;
 		} catch(const std::exception& e) {
 			throw(IrcException::InviteOnlyChan(this->name));
 		}
@@ -121,7 +121,8 @@ void	Channel::leave(const User *user, const std::string &msg) {
 		throw IrcException::NotOnChannel(this->getName()) ;
 
 	this->users.erase(user) ;
-	this->topic_change.first = NULL ; //FIXME: wtf?!
+	if (user == this->topic_change.first)
+		this->topic_change.first = NULL ;
 
 	this->sendMsg(NULL, msg) ;
 }
