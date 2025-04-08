@@ -459,9 +459,6 @@ void	Server::TOPIC(const User *client, const std::string &channel, const std::st
 // Find target fd by name and let know the server if target is already in channel and if user does exist maybe in the order
 void Server::MODE(const User *client, const std::string &channel, const std::vector<std::string> &modesArgs)
 {
-
-	// TODO Fix exception when doing /mode #test +oi user1
-
 	if (!this->getChannel(channel))
 		throw IrcException::NoSuchNick(channel);
 
@@ -470,31 +467,28 @@ void Server::MODE(const User *client, const std::string &channel, const std::vec
 	if (modesArgs.empty())
 	{
 		this->RPL_CHANNELMODEIS(client, chan->getName(), chan->getModesString(), chan->getModesArgs());
-		return ;
+		return;
 	}
 
-	bool		inAdditionSign = true;
-	size_t		argsIndex = 1;
+	bool inAdditionSign = true;
+	size_t argsIndex = 1;
 
 	for (size_t i = 0; i < modesArgs.at(0).size(); i++)
 	{
-		if (modesArgs.at(0)[i] == '-')
+		char mode = modesArgs.at(0)[i];
+
+		if (mode == '-' || mode == '+')
 		{
-			inAdditionSign = false;
-			i++;
-		}
-		else if (modesArgs.at(0)[i] == '+')
-		{
-			inAdditionSign = true;
-			i++;
+			inAdditionSign = (mode == '+');
+			continue;
 		}
 
 		if (!chan->isUserIn(client))
-			throw IrcException::NotOnChannel(chan->getName()) ;
+			throw IrcException::NotOnChannel(chan->getName());
 		if (!chan->hasPerms(client, OPERATOR))
-			throw IrcException::ChanoPrivNeeded(chan->getName()) ;
+			throw IrcException::ChanoPrivNeeded(chan->getName());
 
-		switch (modesArgs.at(0)[i])
+		switch (mode)
 		{
 			case 'i':
 				chan->setInviteOnly(inAdditionSign);
@@ -504,29 +498,45 @@ void Server::MODE(const User *client, const std::string &channel, const std::vec
 				break;
 			case 'k':
 				if (inAdditionSign)
+				{
+					if (argsIndex >= modesArgs.size())
+						throw IrcException::NeedMoreParams();
 					chan->setPassword(modesArgs.at(argsIndex));
+				}
 				else
 					chan->setPassword("");
+				argsIndex++;
 				break;
 			case 'o':
-				if (!chan->isUserIn(getUser(modesArgs.at(argsIndex))))
+			{
+				if (argsIndex >= modesArgs.size())
+					throw IrcException::NeedMoreParams();
+				User* target = getUser(modesArgs.at(argsIndex));
+				if (!chan->isUserIn(target))
 					throw IrcException::UserNotInChannel(modesArgs.at(argsIndex));
 				if (inAdditionSign)
-					chan->addPerms(getUser(modesArgs.at(argsIndex)), OPERATOR);
+					chan->addPerms(target, OPERATOR);
 				else
-					chan->removePerms(getUser(modesArgs.at(argsIndex)), OPERATOR);
+					chan->removePerms(target, OPERATOR);
+				argsIndex++;
 				break;
+			}
 			case 'l':
 				if (inAdditionSign)
+				{
+					if (argsIndex >= modesArgs.size())
+						throw IrcException::NeedMoreParams();
 					chan->setMaxUsers(atoi(modesArgs.at(argsIndex).c_str()));
+					argsIndex++;
+				}
 				else
 					chan->setMaxUsers(-1);
 				break;
 			default:
 				throw IrcException::UnknownMode();
 		}
-		argsIndex++;
-		chan->setModesArgs(modesArgs.at(argsIndex) + " ");
+		if (argsIndex < modesArgs.size())
+			chan->setModesArgs(modesArgs.at(argsIndex) + " ");
 	}
 	chan->setModesString(modesArgs.at(0));
 }
