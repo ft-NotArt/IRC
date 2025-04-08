@@ -124,8 +124,17 @@ void Channel::join(const User *user, const std::string &password) {
 	this->server.RPL_ENDOFNAMES(user, *this) ;
 }
 
-void	Channel::ban(const User *user, const User *banned, const std::string &msg) {
-	this->kick(user, banned, msg) ;
+void	Channel::ban(const User *user, const User *banned) {
+	this->kick(user, banned, "") ;
+	
+	std::string msg(":") ;
+	msg += user->getNickname() ;
+	msg += " MODE " ;
+	msg += this->name ;
+	msg += " +b " ;
+	msg += banned->getNickname() ;
+	this->server.sendMsg(banned->getFd(), msg) ;
+
 	this->perms[banned] = BANNED ;
 }
 

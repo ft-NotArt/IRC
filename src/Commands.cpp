@@ -532,12 +532,25 @@ void	Server::MODE(const User *client, const std::string &channel, const std::vec
 				{
 					if (argsIndex >= modesArgs.size())
 						throw IrcException::NeedMoreParams();
-					chan->setMaxUsers(atoi(modesArgs.at(argsIndex).c_str()));
+					chan->setMaxUsers(atoi(modesArgs.at(argsIndex).c_str())); //TODO:test
 					chan->addModesArgs(modesArgs.at(argsIndex++) + " ");
 				}
 				else
 					chan->setMaxUsers(-1);
 				break;
+			case 'b':
+			{
+				if (argsIndex >= modesArgs.size())
+					throw IrcException::NeedMoreParams();
+				User *target = getUser(modesArgs.at(argsIndex));
+				if (!target)
+					throw IrcException::NoSuchNick(modesArgs.at(argsIndex)) ;
+				if (!chan->isUserIn(target))
+					throw IrcException::UserNotInChannel(modesArgs.at(argsIndex), channel);
+				
+				addOrRm ? chan->ban(client, target) : chan->removePerms(target, BANNED) ;
+				break;
+			}
 			default:
 				throw IrcException::UnknownMode(std::string(&mode));
 		}
