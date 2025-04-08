@@ -1,5 +1,7 @@
 #include "Bot.hpp"
 
+extern volatile bool running;
+
 Bot::Bot() : fd(-1) {}
 
 Bot::~Bot() {
@@ -58,7 +60,7 @@ void	Bot::connect(const std::string &password, int port, const std::string &ip) 
 }
 
 void	Bot::run() {
-	while (true) {
+	while (running) {
 		this->receiveMsg();
 		this->processMsg();
 	}
@@ -107,6 +109,9 @@ void	Bot::processMsg() {
 		this->buffer.erase(0, pos + 2);
 		pos = this->buffer.find("\r\n");
 
+		if (command == "ERROR") {
+			running = false;
+		}
 		if (command == "INVITE") {
 			std::string channel;
 			ssMessage >> channel >> channel;
