@@ -128,7 +128,7 @@ void	Bot::processMsg() {
 			while (ssMessage >> word) {
 				if (this->containsBadWords(word)) {
 					origin.erase(0, 1);
-					this->sendMsg("MODE +b " + origin);
+					this->sendMsg("MODE " + channel + " +b " + origin);
 					return ;
 				}
 			}
