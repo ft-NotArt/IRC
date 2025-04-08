@@ -2,17 +2,31 @@
 
 Bot::Bot() : fd(-1) {}
 
+Bot::~Bot() {
+	if (this->fd < 0)
+		return ;
+	for (size_t i = 0; i < this->badWordsRegex.size(); ++i)
+		regfree(&(this->badWordsRegex[i]));
+	this->sendMsg("QUIT :Bot disconnected");
+	close(this->fd);
+}
+
 void	Bot::start() {
 	std::ifstream file("badwords.txt");
 	if (!file)
 		throw std::runtime_error("Unable to open badwords.txt");
 
 	std::string line;
-
+	int reti;
 	while (std::getline(file, line)) {
 		if (line.empty())
 			continue ;
-		this->badWords.push_back(line);
+		regex_t regex;
+		reti = regcomp(&regex, line.c_str(), REG_EXTENDED | REG_NOSUB);
+		if (reti)
+			continue;
+
+		this->badWordsRegex.push_back(regex);
 	}
 
 	file.close();
@@ -48,32 +62,12 @@ void	Bot::run() {
 		this->receiveMsg();
 		this->processMsg();
 	}
-
-	this->disconnect() ;
-}
-
-void	Bot::disconnect() {
-	if (this->fd < 0)
-		return ;
-	this->sendMsg("QUIT :Bot disconnected");
-	close(this->fd);
 }
 
 bool Bot::containsBadWords(const std::string &msg) {
-	regex_t regex;
-	int reti;
-
-	for (size_t i = 0; i < this->badWords.size(); ++i) {
-		reti = regcomp(&regex, badWords[i].c_str(), REG_EXTENDED | REG_NOSUB);
-		if (reti)
-			continue;
-
-		reti = regexec(&regex, msg.c_str(), 0, NULL, 0);
-		regfree(&regex);
-
-		if (reti == 0) {
+	for (size_t i = 0; i < this->badWordsRegex.size(); ++i) {
+		if (regexec(&(this->badWordsRegex[i]), msg.c_str(), 0, NULL, 0) == 0)
 			return true;
-		}
 	}
 	return false;
 }
@@ -124,18 +118,15 @@ void	Bot::processMsg() {
 			if (channel[0] != '#')
 				return ;
 
-			std::string message;
-			std::getline(ssMessage, message);
-			message.erase(0, 1);
-
-			bool isBadWord = containsBadWords(message);
-			if (isBadWord) {
-				origin.erase(0, 1);
-				this->sendMsg("MODE +b " + origin);
-				return ;
+			ssMessage.ignore(2);
+			std::string word;
+			while (ssMessage >> word) {
+				if (this->containsBadWords(word)) {
+					origin.erase(0, 1);
+					this->sendMsg("MODE +b " + origin);
+					return ;
+				}
 			}
-
-			std::cout << "Message: " << message << std::endl;
 		}
 		ssMessage.clear();
 	}

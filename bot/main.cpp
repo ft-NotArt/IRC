@@ -15,7 +15,6 @@ int main(int argc, char *argv[]) {
 		bot.run() ;
 	} catch (std::exception &e) {
 		std::cerr << "Error: " << e.what() << std::endl ;
-		bot.disconnect() ;
 		return EXIT_FAILURE ;
 	}
 
