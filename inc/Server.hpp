@@ -11,6 +11,7 @@ class User ;
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <stdexcept>
 #include <vector>
 #include <map>
 #include <unistd.h>
@@ -51,14 +52,14 @@ class User ;
 
 #define CONCAT(a, b) a##b
 #define CATCH_CMD(cmd)													\
-    catch(const std::exception& e) {									\
-        std::string except(e.what());									\
-        replaceAll(except, "%client%", user->getNickname());			\
-        replaceAll(except, "%command%", CONCAT(MSG_CLI_, cmd));			\
-        try {															\
-            this->sendMsg(user->getFd(), except);						\
-        } catch (const std::exception &ex) {}							\
-    }
+	catch(const std::exception& e) {									\
+		std::string except(e.what());									\
+		replaceAll(except, "%client%", user->getNickname());			\
+		replaceAll(except, "%command%", CONCAT(MSG_CLI_, cmd));			\
+		try {															\
+			this->sendMsg(user->getFd(), except);						\
+		} catch (const std::exception &ex) {}							\
+	}
 
 
 
@@ -84,7 +85,7 @@ class Server {
 		int			 						getEpollFd()								const	{ return this->epollFd ; } ;
 		User								*getUserByFd(int fd)						const	;
 		Channel								*getChannel(const std::string &channelName)			;
-		User								*getUser(const std::string &userName)			;
+		User								*getUser(const std::string &userName)				;
 
 		void	createSocket(void) ;
 		void	createEpoll(void) ;
@@ -154,4 +155,15 @@ class Server {
 		void	MSG_ERROR(const User *client, const std::string &reason)						const ;
 		void	MSG_JOIN(const User *client, const Channel &channel)							const ;
 		void	MSG_TOPIC(const User *client, const Channel &channel, const std::string &topic)	const ;
+
+		// Exception
+		class DisconnectClient : public std::exception {
+			private:
+				std::string reason ;
+			public:
+				DisconnectClient(std::string reason) { this->reason = reason ; }
+				virtual ~DisconnectClient() throw() {}
+			
+				virtual const char *what() const throw() { return this->reason.c_str() ; } ;
+		} ;
 } ;

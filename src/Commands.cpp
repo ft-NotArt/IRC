@@ -21,8 +21,10 @@ void	Server::handleCAP(std::stringstream &ssMessage, User *user) {
 	std::string capName;
 	ssMessage >> capName;
 
-	if (capName == MSG_CLI_CAP_LS)
+	if (capName == MSG_CLI_CAP_LS) {
+		user->setInCAP(true) ;
 		this->MSG_CAP_LS(user);
+	}
 	else if (capName == MSG_CLI_CAP_REQ) {
 		std::string requested_cap ;
 		std::getline(ssMessage, requested_cap) ;
@@ -31,9 +33,11 @@ void	Server::handleCAP(std::stringstream &ssMessage, User *user) {
 			this->MSG_CAP_ACK(user, SERVER_CAP) ;
 	}
 	else if (capName == MSG_CLI_CAP_END) {
-		user->setRequestCap(true) ;
-		if (!user->getUsername().empty())
-			this->greetings(user);
+		user->setInCAP(false) ;
+		if (!user->getUsername().empty()) {
+			user->setRegistered(true) ;
+			this->greetings(user) ;
+		}
 	}
 }
 
@@ -78,21 +82,37 @@ void	Server::handleNICK(std::stringstream &ssMessage, User *user) {
 /* USER */
 
 void	Server::handleUSER(std::stringstream &ssMessage, User *user) {
-	std::string username;
-	ssMessage >> username;
+	try {
+		std::string username;
+		ssMessage >> username;
 
-	// /* DEBUG */ std::cout << YELLOW "[DBUG|CLI[" << fd << "]] User Old: `" << message.substr(std::strlen(MSG_CLI_USER) + 1, message.find(' ', std::strlen(MSG_CLI_USER) + 1)) << "`" << std::endl;
-	/* DEBUG */ std::cout << YELLOW "[DBUG|CLI[" << user->getFd() << "]] User: `" << username << "`" << std::endl;
-	user->setUsername(username) ;
+		if (username.empty())
+			throw IrcException::NeedMoreParams() ;
+		else if (user->isRegistered() || !user->getUsername().empty())
+			throw IrcException::AlreadyRegistered() ;
+		else if (user->getPassword() != this->password)
+			throw IrcException::PasswdMismatch() ;
+		else if (user->getNickname().empty())
+			throw Server::DisconnectClient("Nickname error (invalid/empty)") ;
 
-	if (user->getPassword() != this->password)
-		throw IrcException::PasswdMismatch() ;
+		// /* DEBUG */ std::cout << YELLOW "[DBUG|CLI[" << fd << "]] User Old: `" << message.substr(std::strlen(MSG_CLI_USER) + 1, message.find(' ', std::strlen(MSG_CLI_USER) + 1)) << "`" << std::endl;
+		/* DEBUG */ std::cout << YELLOW "[DBUG|CLI[" << user->getFd() << "]] User: `" << username << "`" << std::endl;
 
-	/* DEBUG */ std::cout << LIGHT_GREEN << "[DBUG|CLI[" << user->getFd() << "]] Client " << user->getFd() << " authenticated successfully." << "\e[0m" << std::endl;
-	user->setRegistered(true) ;
+		user->setUsername(username) ;
 
-	if (user->hasRequestCap())
-		this->greetings(user) ;
+		/* DEBUG */ std::cout << LIGHT_GREEN << "[DBUG|CLI[" << user->getFd() << "]] Client " << user->getFd() << " authenticated successfully." << "\e[0m" << std::endl;
+
+		if (!user->isInCAP()) {
+			user->setRegistered(true) ;
+			this->greetings(user) ;
+		}
+	}
+	catch(const Server::DisconnectClient &e) {
+		throw e ;
+	} catch(const IrcException::PasswdMismatch &e) {
+		throw Server::DisconnectClient("Wrong Password") ;
+	} CATCH_CMD(USER)
+	
 }
 
 /* PING */

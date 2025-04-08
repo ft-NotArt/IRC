@@ -260,32 +260,31 @@ void	Server::processMsg(int fd) {
 				// 	replaceAll(except, "%command%", MSG_CLI_MODE) ;
 				}
 			}
-		} catch (const std::exception &e) {
-			/* DEBUG */ std::cout << LIGHT_RED << "[DBUG|CLI[" << fd << "]] Exception caught: " << e.what() << "\e[0m" << std::endl;
-			if (e.what()[0] == ':') {
-				std::string except(e.what());
-				replaceAll(except, "%client%", user->getNickname()) ;
-				try {
-					this->sendMsg(fd, except) ;
-				} catch (const std::exception &ex) {}
-			}
-			// this->closeClient(fd, "jsp gros on se chie dessus") ;
+		} catch (const Server::DisconnectClient &e) {
+			this->QUIT(user, e.what(), false) ;
+		} catch(const std::exception& e) {
+			std::string except(e.what());
+			replaceAll(except, "%client%", user->getNickname());
+			try {
+				this->sendMsg(user->getFd(), except);
+			} catch (const std::exception &ex) {}
 		}
+
 		ssMessage.clear();
 	}
 }
 
 void	Server::sendMsg(int fd, std::string msg) const {
-	if (msg.empty())
+	if (msg.empty() || !this->getUserByFd(fd))
 		return ;
 
 	msg += "\r\n" ;
 
 	std::cout << BLUE << "[SRV->CLI[" << fd << "]] " << debugShowInvisibleChar(msg) << "\e[0m" << std::endl;
+
 	if (send(fd, msg.c_str(), msg.size(), 0) < 0) {
-		std::cerr << "send error: " << strerror(errno) << std::endl;
-		// TODO: Change this to better exception | Think to change every catch after use of sendMsg when changing the exception it throws
-		throw std::exception() ;
+		std::cerr << LIGHT_RED << "send error: " << strerror(errno) << std::endl;
+		throw Server::DisconnectClient("send error") ;
 	}
 }
 
