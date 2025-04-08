@@ -28,7 +28,8 @@ class Bot {
 	private:
 		int	fd ;
 		std::string buffer;
-		std::vector<regex_t> badWordsRegex ;
+		std::vector<regex_t *> badWordsRegex ;
+		std::string lastBanned;
 
 	public:
 		Bot() ;
@@ -43,4 +44,7 @@ class Bot {
 		void	processMsg() ;
 
 		bool	containsBadWords(const std::string &msg) ;
+
+		std::string	&getLastBanned() { return this->lastBanned ; }
+		void	setLastBanned(std::string &lastBanned) { this->lastBanned = lastBanned ; }
 } ;

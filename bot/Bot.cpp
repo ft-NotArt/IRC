@@ -5,10 +5,12 @@ extern volatile bool running;
 Bot::Bot() : fd(-1) {}
 
 Bot::~Bot() {
+	for (size_t i = 0; i < this->badWordsRegex.size(); ++i) {
+		regfree(this->badWordsRegex[i]);
+		delete this->badWordsRegex[i];
+	}
 	if (this->fd < 0)
 		return ;
-	for (size_t i = 0; i < this->badWordsRegex.size(); ++i)
-		regfree(&(this->badWordsRegex[i]));
 	this->sendMsg("QUIT :Bot disconnected");
 	close(this->fd);
 }
@@ -23,10 +25,12 @@ void	Bot::start() {
 	while (std::getline(file, line)) {
 		if (line.empty())
 			continue ;
-		regex_t regex;
-		reti = regcomp(&regex, line.c_str(), REG_EXTENDED | REG_NOSUB);
-		if (reti)
+		regex_t *regex = new regex_t;
+		reti = regcomp(regex, line.c_str(), REG_EXTENDED | REG_NOSUB);
+		if (reti) {
+			delete regex;
 			continue;
+		}
 
 		this->badWordsRegex.push_back(regex);
 	}
@@ -68,7 +72,7 @@ void	Bot::run() {
 
 bool Bot::containsBadWords(const std::string &msg) {
 	for (size_t i = 0; i < this->badWordsRegex.size(); ++i) {
-		if (regexec(&(this->badWordsRegex[i]), msg.c_str(), 0, NULL, 0) == 0)
+		if (regexec(this->badWordsRegex[i], msg.c_str(), 0, NULL, 0) == 0)
 			return true;
 	}
 	return false;
@@ -88,7 +92,7 @@ void	Bot::receiveMsg() {
 	int readBytes = recv(this->fd, buff, sizeof(buff) - 1, 0);
 
 	if (readBytes < 0)
-		throw std::runtime_error("read error: " + std::string(strerror(errno)));
+		throw std::runtime_error(strerror(errno));
 	if (readBytes == 0)
 		return ;
 
@@ -111,8 +115,11 @@ void	Bot::processMsg() {
 
 		if (command == "ERROR") {
 			running = false;
-		}
-		if (command == "INVITE") {
+		} else if (command == "482") {
+			std::string channel;
+			ssMessage >> channel >> channel;
+			this->sendMsg("PRIVMSG " + channel + " :I want to ban " + this->getLastBanned() + ", but I don't have permission to do it :(");
+		} else if (command == "INVITE") {
 			std::string channel;
 			ssMessage >> channel >> channel;
 
@@ -128,6 +135,7 @@ void	Bot::processMsg() {
 			while (ssMessage >> word) {
 				if (this->containsBadWords(word)) {
 					origin.erase(0, 1);
+					this->setLastBanned(origin);
 					this->sendMsg("MODE " + channel + " +b " + origin);
 					return ;
 				}

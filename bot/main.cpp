@@ -1,6 +1,8 @@
 #include <csignal>
 #include "Bot.hpp"
 
+#define LIGHT_RED "\e[1;91m"
+
 volatile bool running = true;
 
 void signalHandler(int signal) {
@@ -32,7 +34,7 @@ int main(int argc, char *argv[]) {
 		bot.connect(argv[1], std::atoi(argv[2]), ip) ;
 		bot.run() ;
 	} catch (std::exception &e) {
-		std::cerr << "Error: " << e.what() << std::endl ;
+		std::cerr << LIGHT_RED << std::endl << e.what() << RESET << std::endl ;
 		return EXIT_FAILURE ;
 	}
 
