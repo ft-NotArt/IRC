@@ -475,16 +475,16 @@ void	Server::MODE(const User *client, const std::string &channel, const std::vec
 	Channel *chan = this->getChannel(channel);
 	if (!chan)
 		throw IrcException::NoSuchChannel(channel) ;
-
-	if (!chan->isUserIn(client))
-		throw IrcException::NotOnChannel(chan->getName());
-	else if (!chan->hasPerms(client, OPERATOR))
-		throw IrcException::ChanoPrivNeeded(chan->getName());
 	
 	if (modesArgs.empty()) {
 		this->RPL_CHANNELMODEIS(client, chan->getName(), chan->getModesString(), chan->getModesArgs());
 		return;
 	}
+
+	if (!chan->isUserIn(client))
+		throw IrcException::NotOnChannel(chan->getName());
+	else if (!chan->hasPerms(client, OPERATOR))
+		throw IrcException::ChanoPrivNeeded(chan->getName());
 
 	bool addOrRm = true;
 	size_t argsIndex = 1;
@@ -511,7 +511,7 @@ void	Server::MODE(const User *client, const std::string &channel, const std::vec
 					chan->setPassword(modesArgs.at(argsIndex));
 				} else
 					chan->setPassword("");
-				argsIndex++;
+				chan->addModesArgs(modesArgs.at(argsIndex++) + " ");
 				break;
 			case 'o':
 			{
@@ -524,7 +524,7 @@ void	Server::MODE(const User *client, const std::string &channel, const std::vec
 					throw IrcException::UserNotInChannel(modesArgs.at(argsIndex), channel);
 				
 				addOrRm ? chan->addPerms(target, OPERATOR) : chan->removePerms(target, OPERATOR);
-				argsIndex++;
+				chan->addModesArgs(modesArgs.at(argsIndex++) + " ");
 				break;
 			}
 			case 'l':
@@ -533,7 +533,7 @@ void	Server::MODE(const User *client, const std::string &channel, const std::vec
 					if (argsIndex >= modesArgs.size())
 						throw IrcException::NeedMoreParams();
 					chan->setMaxUsers(atoi(modesArgs.at(argsIndex).c_str()));
-					argsIndex++;
+					chan->addModesArgs(modesArgs.at(argsIndex++) + " ");
 				}
 				else
 					chan->setMaxUsers(-1);
@@ -541,9 +541,19 @@ void	Server::MODE(const User *client, const std::string &channel, const std::vec
 			default:
 				throw IrcException::UnknownMode();
 		}
-
-		if (argsIndex < modesArgs.size()) // TODO: verify
-			chan->addModesArgs(modesArgs.at(argsIndex) + " ");
 	}
 	chan->addModesString(modesArgs.at(0));
+
+	std::string msg(":") ;
+	msg += client->getNickname() ;
+	msg += " MODE " ;
+	msg += channel ;
+	msg += " " ;
+	msg += modesArgs.at(0) ;
+	for (size_t i = 1; i < modesArgs.size(); i++) {
+		msg += " " ;
+		msg += modesArgs.at(i) ;
+	}
+
+	chan->sendMsg(client, msg) ;
 }
