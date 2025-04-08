@@ -539,7 +539,7 @@ void	Server::MODE(const User *client, const std::string &channel, const std::vec
 					chan->setMaxUsers(-1);
 				break;
 			default:
-				throw IrcException::UnknownMode();
+				throw IrcException::UnknownMode(std::string(&mode));
 		}
 	}
 	chan->addModesString(modesArgs.at(0));

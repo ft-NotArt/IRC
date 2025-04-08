@@ -222,8 +222,15 @@ class IrcException {
 
 		/// @brief Indicates that a mode character used by a client is not recognized by the server. The text used in the last param of this message may vary.
 		class UnknownMode : public std::exception {
+			private:
+				std::string message ;
 			public:
-				virtual const char *what() const throw() { return ":Internet_Relay_Chat 472 %client% %modechar% :is unknown mode char to me"; };
+				UnknownMode(std::string modechar) {
+					this->message = ":Internet_Relay_Chat 472 %client% " + modechar + " :is unknown mode char to me" ;
+				}
+				virtual ~UnknownMode() throw() {}
+			
+				virtual const char *what() const throw() { return this->message.c_str() ; };
 		};
 
 		/// @brief Returned to indicate that a JOIN command failed because the channel is set to [invite-only] mode and the client has not been invited to the channel or had an invite exception set for them. The text used in the last param of this message may vary.
