@@ -555,5 +555,5 @@ void	Server::MODE(const User *client, const std::string &channel, const std::vec
 		msg += modesArgs.at(i) ;
 	}
 
-	chan->sendMsg(client, msg) ;
+	chan->sendMsg(NULL, msg) ;
 }
