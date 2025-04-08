@@ -53,6 +53,7 @@ void	Server::RPL_CREATED(const User *client) const {
 
 	rpl += " :This server was created " ;
 	rpl += asctime(this->creationDate) ;
+	rpl.erase(rpl.length() - 1) ;
 
 	this->sendMsg(client->getFd(), rpl) ;
 }
