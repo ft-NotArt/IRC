@@ -98,6 +98,11 @@ void Channel::join(const User *user, const std::string &password) {
 	this->server.RPL_ENDOFNAMES(user, *this) ;
 }
 
+void	Channel::ban(const User *user, const User *banned, const std::string &msg) {
+	this->kick(user, banned, msg) ;
+	this->perms[banned] = BANNED ;
+}
+
 void	Channel::kick(const User *user, const User *kicked, const std::string &msg) {
 	if (!this->isUserIn(kicked))
 		throw IrcException::UserNotInChannel(user->getNickname(), this->name) ;
@@ -116,7 +121,7 @@ void	Channel::leave(const User *user, const std::string &msg) {
 		throw IrcException::NotOnChannel(this->getName()) ;
 
 	this->users.erase(user) ;
-	this->topic_change.first = NULL ;
+	this->topic_change.first = NULL ; //FIXME: wtf?!
 
 	this->sendMsg(NULL, msg) ;
 }
