@@ -8,7 +8,7 @@
 void	Server::MSG_CAP_LS(const User *client) const {
 	std::string msg(":") ;
 
-	msg += client->getNickname() ;
+	msg += client->getFullname() ;
 	msg += " " ;
 
 	msg += "CAP * LS :" ;
@@ -20,7 +20,7 @@ void	Server::MSG_CAP_LS(const User *client) const {
 void	Server::MSG_CAP_ACK(const User *client, const std::string &request_capa) const {
 	std::string msg(":") ;
 
-	msg += client->getNickname() ;
+	msg += client->getFullname() ;
 	msg += " " ;
 
 	msg += "CAP * ACK " ;
@@ -33,7 +33,7 @@ void	Server::MSG_CAP_ACK(const User *client, const std::string &request_capa) co
 void	Server::MSG_PONG(const User *client, const std::string &token) const {
 	std::string msg(":") ;
 
-	msg += client->getNickname() ;
+	msg += client->getFullname() ;
 
 	msg += " PONG " ;
 
@@ -48,7 +48,7 @@ void	Server::MSG_PONG(const User *client, const std::string &token) const {
 void	Server::MSG_INVITE(const User *client, const User *invited, const Channel &channel) const {
 	std::string msg(":") ;
 
-	msg += client->getNickname() ;
+	msg += client->getFullname() ;
 
 	msg += " INVITE " ;
 
@@ -63,7 +63,7 @@ void	Server::MSG_INVITE(const User *client, const User *invited, const Channel &
 void	Server::MSG_ERROR(const User *client, const std::string &reason) const {
 	std::string msg(":") ;
 
-	msg += client->getNickname() ;
+	msg += client->getFullname() ;
 
 	msg += " ERROR :" ;
 	msg += reason ;
@@ -74,7 +74,7 @@ void	Server::MSG_ERROR(const User *client, const std::string &reason) const {
 void	Server::MSG_JOIN(const User *client, const Channel &channel) const {
 	std::string msg(":") ;
 
-	msg += client->getNickname() ;
+	msg += client->getFullname() ;
 
 	msg += " JOIN " ;
 	msg += channel.getName() ;
@@ -85,7 +85,7 @@ void	Server::MSG_JOIN(const User *client, const Channel &channel) const {
 void	Server::MSG_TOPIC(const User *client, const Channel &channel, const std::string &topic)	const {
 	std::string msg(":") ;
 
-	msg += client->getNickname() ;
+	msg += client->getFullname() ;
 
 	msg += " TOPIC " ;
 	msg += channel.getName() ;

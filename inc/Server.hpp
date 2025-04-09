@@ -23,6 +23,7 @@ class User ;
 #include <sys/epoll.h>
 #include <sys/types.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 
 #define SERVER_NAME		"Internet_Relay_Chat"
 #define SERVER_VERSION	"2.0"
@@ -51,14 +52,14 @@ class User ;
 #define MSG_CLI_INVITE		"INVITE"
 
 #define CONCAT(a, b) a##b
-#define CATCH_CMD(cmd)													\
-	catch(const std::exception& e) {									\
-		std::string except(e.what());									\
-		replaceAll(except, "%client%", user->getNickname());			\
-		replaceAll(except, "%command%", CONCAT(MSG_CLI_, cmd));			\
-		try {															\
-			this->sendMsg(user->getFd(), except);						\
-		} catch (const std::exception &ex) {}							\
+#define CATCH_CMD(cmd)											\
+	catch(const std::exception& e) {							\
+		std::string except(e.what());							\
+		replaceAll(except, "%client%", user->getFullname());	\
+		replaceAll(except, "%command%", CONCAT(MSG_CLI_, cmd));	\
+		try {													\
+			this->sendMsg(user->getFd(), except);				\
+		} catch (const std::exception &ex) {}					\
 	}
 
 

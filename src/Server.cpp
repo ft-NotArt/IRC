@@ -132,7 +132,10 @@ void Server::run(void) {
 
 void Server::acceptClient() {
 	int clientSocket ;
-	while ((clientSocket = accept(this->socket, NULL, NULL)) > 0) {
+	struct sockaddr_in clientAddr ;
+	socklen_t clientAddrLen ;
+
+	while ((clientSocket = accept(this->socket, (struct sockaddr *)&clientAddr, &clientAddrLen)) > 0) {
 		std::cout << "Accepted new client: " << clientSocket << std::endl;
 		epoll_event clientEvent;
 		clientEvent.events = EPOLLIN;
@@ -144,6 +147,7 @@ void Server::acceptClient() {
 		}
 
 		this->users[clientSocket] = new User(clientSocket) ;
+		this->users[clientSocket]->setHostname((inet_ntoa(clientAddr.sin_addr))) ;
 	}
 
 	if (clientSocket == -1 && (errno != EAGAIN && errno != EWOULDBLOCK)) {
@@ -230,43 +234,14 @@ void	Server::processMsg(int fd) {
 					this->handleTOPIC(ssMessage, user) ;
 				else if (command == MSG_CLI_KICK)
 					this->handleKICK(ssMessage, user) ;
-				else if (command == MSG_CLI_MODE) {
+				else if (command == MSG_CLI_MODE)
 					this->handleMODE(ssMessage, user) ;
-				}
-				// 	try
-				// {
-				// 	//  TODO handle when /mode only is sent, Irssi is the only one sending the message
-				// 	std::stringstream ss(message.substr(std::strlen(MSG_CLI_MODE)));
-				// 	std::string channel;
-
-				// 	ss >> channel; // The channel target out here
-				// 	if (channel.empty())
-				// 	{
-				// 		throw IrcException::NeedMoreParams();
-				// 	}
-
-				// 	std::vector<std::string> modesArgs;
-				// 	std::string tmp; // Fkin tmp cause we have to operate like this
-
-				// 	while (ss >> tmp)
-				// 	{
-				// 		modesArgs.push_back(tmp);
-				// 	}
-
-				// 	// TODOD if !modesArgs -> Reply channel modes is 324
-				// 	this->MODE(user, channel, modesArgs);
-
-				// } catch(const std::exception& e) {
-				// 	std::string except(e.what());
-				// 	replaceAll(except, "%client%", user->getNickname()) ;
-				// 	replaceAll(except, "%command%", MSG_CLI_MODE) ;
-				// }
 			}
 		} catch (const Server::DisconnectClient &e) {
 			this->QUIT(user, e.what(), false) ;
 		} catch(const std::exception& e) {
 			std::string except(e.what());
-			replaceAll(except, "%client%", user->getNickname());
+			replaceAll(except, "%client%", user->getFullname());
 			try {
 				this->sendMsg(user->getFd(), except);
 			} catch (const std::exception &ex) {}

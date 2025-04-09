@@ -145,7 +145,7 @@ void	Server::QUIT(const User *client, const std::string &reason, bool requested)
 	this->MSG_ERROR(client, reason) ;
 
 	std::string msg(":") ;
-	msg += client->getNickname() ;
+	msg += client->getFullname() ;
 	msg += " QUIT :" ;
 	if (requested)
 		msg += "Quit: " ;
@@ -217,7 +217,7 @@ void	Server::PRIVMSG(const User *client, const std::vector<std::string> targets,
 
 	for (std::vector<std::string>::const_iterator it = targets.begin(); it != targets.end(); it++) {
 		std::string msg(":") ;
-		msg += client->getNickname() ;
+		msg += client->getFullname() ;
 		msg += " PRIVMSG " ;
 		msg += (*it) ;
 		msg += " :" ;
@@ -296,7 +296,7 @@ void	Server::INVITE(const User *client, const std::string &nickname, const std::
 		throw IrcException::NoSuchNick(nickname) ;
 	
 	std::string msg(":") ;
-	msg += client->getNickname() ;
+	msg += client->getFullname() ;
 	msg += " INVITE " ;
 	msg += nickname ;
 	msg += " " ;
@@ -342,7 +342,7 @@ void	Server::PART(const User *client, const std::string &channel, const std::str
 		throw IrcException::NotOnChannel(channel) ;
 
 	std::string msg(":") ;
-	msg += client->getNickname() ;
+	msg += client->getFullname() ;
 	msg += " PART " ;
 	msg += chan->getName() ;
 	if (reason != "") {
@@ -408,7 +408,7 @@ void	Server::KICK(const User *client, const std::string &channel, const std::str
 		throw IrcException::NoSuchNick(kickedUser) ;
 
 	std::string msg(":") ;
-	msg += client->getNickname() ;
+	msg += client->getFullname() ;
 	msg += " KICK " ;
 	msg += chan->getName() ;
 	msg += " " ;
@@ -558,7 +558,7 @@ void	Server::MODE(const User *client, const std::string &channel, const std::vec
 	chan->addModesString(modesArgs.at(0));
 
 	std::string msg(":") ;
-	msg += client->getNickname() ;
+	msg += client->getFullname() ;
 	msg += " MODE " ;
 	msg += channel ;
 	msg += " " ;

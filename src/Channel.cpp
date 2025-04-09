@@ -128,7 +128,7 @@ void	Channel::ban(const User *user, const User *banned) {
 	this->kick(user, banned, "") ;
 	
 	std::string msg(":") ;
-	msg += user->getNickname() ;
+	msg += user->getFullname() ;
 	msg += " MODE " ;
 	msg += this->name ;
 	msg += " +b " ;

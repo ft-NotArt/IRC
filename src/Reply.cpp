@@ -23,7 +23,7 @@ void	Server::RPL_WELCOME(const User *client) const {
 	rpl += SERVER_NAME ;
 	rpl += " Network, " ;
 
-	rpl += client->getNickname() ;
+	rpl += client->getFullname() ;
 
 	this->sendMsg(client->getFd(), rpl) ;
 }
