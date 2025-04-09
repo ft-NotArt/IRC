@@ -9,6 +9,7 @@ void	Server::greetings(const User *user) const {
 	this->RPL_WELCOME(user) ;
 	this->RPL_YOURHOST(user) ;
 	this->RPL_CREATED(user) ;
+	this->RPL_MYINFO(user) ;
 }
 
 void	Server::RPL_WELCOME(const User *client) const {
@@ -53,6 +54,26 @@ void	Server::RPL_CREATED(const User *client) const {
 	rpl += " :This server was created " ;
 	rpl += asctime(this->creationDate) ;
 	rpl.erase(rpl.length() - 1) ;
+
+	this->sendMsg(client->getFd(), rpl) ;
+}
+
+void	Server::RPL_MYINFO(const User *client) const {
+	std::string rpl(":") ;
+
+	rpl += SERVER_NAME ;
+	rpl += " 004 " ;
+	rpl += client->getNickname() ;
+
+	rpl += " " ;
+	rpl += SERVER_NAME ;
+
+	rpl += " " ;
+	rpl += SERVER_VERSION ;
+	
+	rpl += " " ; // user modes (empty)
+
+	rpl += " itkolb" ; // channel modes
 
 	this->sendMsg(client->getFd(), rpl) ;
 }

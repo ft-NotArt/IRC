@@ -141,6 +141,7 @@ class Server {
 		void	RPL_WELCOME(const User *client)																							const ;
 		void	RPL_YOURHOST(const User *client)																						const ;
 		void	RPL_CREATED(const User *client)																							const ;
+		void	RPL_MYINFO(const User *client)																							const ;
 		void	RPL_NAMREPLY(const User *client, const Channel &channel)																const ;
 		void	RPL_ENDOFNAMES(const User *client, const Channel &channel)																const ;
 		void	RPL_INVITING(const User *client, const User *invited, const Channel &channel)											const ;
