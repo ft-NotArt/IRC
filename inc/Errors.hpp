@@ -352,5 +352,18 @@ class IrcException {
 			public:
 				virtual const char *what() const throw() { return ":Internet_Relay_Chat 525 %client% %target chan% :Key is not well-formed"; };
 		};
+
+		/// @brief Indicates that there was a problem with a mode parameter. Replaces various implementation-specific mode-specific numerics.
+		class InvalidModeParam : public std::exception {
+			private:
+				std::string message ;
+			public:
+				InvalidModeParam(std::string channel, std::string modechar, std::string param) {
+					this->message = ":Internet_Relay_Chat 696 %client% " + channel + " " + modechar + " " + param + " :Invalid mode parameter" ;
+				}
+				virtual ~InvalidModeParam() throw() {}
+			
+				virtual const char *what() const throw() { return this->message.c_str() ; };
+		};
 };
 

@@ -496,7 +496,10 @@ void	Server::MODE(const User *client, const std::string &channel, const std::vec
 				{
 					if (argsIndex >= modesArgs.size())
 						throw IrcException::NeedMoreParams();
-					chan->setMaxUsers(atoi(modesArgs.at(argsIndex).c_str())); //TODO:test
+					int limit = atoi(modesArgs.at(argsIndex).c_str()) ;
+					if (limit == 0)
+						throw IrcException::InvalidModeParam(channel, std::string(&mode), modesArgs.at(argsIndex)) ;
+					chan->setMaxUsers(limit);
 					chan->addModesArgs(modesArgs.at(argsIndex++) + " ");
 				}
 				else

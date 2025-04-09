@@ -101,7 +101,7 @@ void Channel::join(const User *user, const std::string &password) {
 		}
 	}
 
-	if (this->max_users != -1 && (int) this->users.size() == this->max_users) {
+	if (this->max_users != -1 && (int) this->users.size() >= this->max_users) {
 		throw(IrcException::ChannelIsFull(this->name));
 	}
 

@@ -4,7 +4,6 @@
 
 
 /* Replies */
-// TODO: put every this->sendMsg in try catch when sendMsg will throw
 
 void	Server::greetings(const User *user) const {
 	this->RPL_WELCOME(user) ;
