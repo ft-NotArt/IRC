@@ -43,32 +43,6 @@ class IrcException {
 				virtual const char *what() const throw() { return this->message.c_str() ; };
 		};
 
-		/// @brief Indicates that the JOIN command failed because the client has joined their maximum number of channels. The text used in the last param of this message may vary.
-		class TooManyChannels : public std::exception {
-			private:
-				std::string message ;
-			public:
-				TooManyChannels(std::string channel) {
-					this->message = ":Internet_Relay_Chat 405 %client% " + channel + " :You have joined too many channels" ;
-				}
-				virtual ~TooManyChannels() throw() {}
-			
-				virtual const char *what() const throw() { return this->message.c_str() ; };
-		};
-
-		/// @brief Returned as a reply to WHOWAS to indicate there is no history information for that nickname.
-		class WasNoSuckNick : public std::exception {
-			private:
-				std::string message ;
-			public:
-				WasNoSuckNick(std::string nick) {
-					this->message = ":Internet_Relay_Chat 406 %client% " + nick + " :There was no such nickname" ;
-				}
-				virtual ~WasNoSuckNick() throw() {}
-			
-				virtual const char *what() const throw() { return this->message.c_str() ; };
-		};
-
 		/// @brief Returned by the PRIVMSG command to indicate the message wasn’t delivered because there was no recipient given.
 		class NoRecipient : public std::exception {
 			public:
@@ -79,31 +53,6 @@ class IrcException {
 		class NoTextToSend : public std::exception {
 			public:
 				virtual const char *what() const throw() { return ":Internet_Relay_Chat 412 %client% :No text to send"; };
-		};
-
-		/// @brief Indicates a given line does not follow the specified size limits (512 bytes for the main section, 4094 or 8191 bytes for the tag section).
-		class InputTooLong : public std::exception {
-			public:
-				virtual const char *what() const throw() { return ":Internet_Relay_Chat 417 %client% :Input line was too long"; };
-		};
-
-		/// @brief Sent to a registered client to indicate that the command they sent isn’t known by the server. The text used in the last param of this message may vary.
-		class UnknownCommand : public std::exception {
-			private:
-				std::string message ;
-			public:
-				UnknownCommand(std::string command) {
-					this->message = ":Internet_Relay_Chat 421 %client% " + command + " :Unknown command" ;
-				}
-				virtual ~UnknownCommand() throw() {}
-			
-				virtual const char *what() const throw() { return this->message.c_str() ; };
-		};
-
-		/// @brief Indicates that the Message of the Day file does not exist or could not be found. The text used in the last param of this message may vary.
-		class NoMotd : public std::exception {
-			public:
-				virtual const char *what() const throw() { return ":Internet_Relay_Chat 422 %client% :MOTD File is missing"; };
 		};
 
 		/// @brief Returned when a nickname parameter is expected for a command but isn’t given.
@@ -201,12 +150,6 @@ class IrcException {
 				virtual const char *what() const throw() { return ":Internet_Relay_Chat 464 %client% :Password incorrect"; };
 		};
 
-		/// @brief Returned to indicate that the server has been configured to explicitly deny connections from this client. The text used in the last param of this message varies wildly and typically also contains the reason for the ban and/or ban details, and SHOULD be displayed as-is by IRC clients to their users.
-		class YourReBannedCreep : public std::exception {
-			public:
-				virtual const char *what() const throw() { return ":Internet_Relay_Chat 465 %client% :You are banned from this server."; };
-		};
-
 		/// @brief Returned to indicate that a JOIN command failed because the client limit mode has been set and the maximum number of users are already joined to the channel. The text used in the last param of this message may vary.
 		class ChannelIsFull : public std::exception {
 			private:
@@ -298,12 +241,6 @@ class IrcException {
 				virtual const char *what() const throw() { return this->message.c_str() ; };
 		};
 
-		/// @brief Indicates that the command failed because the user is not an IRC operator. The text used in the last param of this message may vary.
-		class NoPrivileges : public std::exception {
-			public:
-				virtual const char *what() const throw() { return ":Internet_Relay_Chat 481 %client% :Permission Denied- You're not an IRC operator"; };
-		};
-
 		/// @brief Indicates that a command failed because the client does not have the appropriate channel privileges. This numeric can apply for different prefixes such as halfop, operator, etc. The text used in the last param of this message may vary.
 		class ChanoPrivNeeded : public std::exception {
 			private:
@@ -315,42 +252,6 @@ class IrcException {
 				virtual ~ChanoPrivNeeded() throw() {}
 			
 				virtual const char *what() const throw() { return this->message.c_str() ; };
-		};
-
-		/// @brief Indicates that a KILL command failed because the user tried to kill a server. The text used in the last param of this message may vary.
-		class CantKillServer : public std::exception {
-			public:
-				virtual const char *what() const throw() { return ":Internet_Relay_Chat 483 %client% :You cant kill a server!"; };
-		};
-
-		/// @brief Indicates that an OPER command failed because the server has not been configured to allow connections from this client’s host to become an operator. The text used in the last param of this message may vary.
-		class NoOperHost : public std::exception {
-			public:
-				virtual const char *what() const throw() { return ":Internet_Relay_Chat 491 %client% :No O-lines for your host"; };
-		};
-
-		/// @brief Indicates that a MODE command affecting a user contained a MODE letter that was not recognized. The text used in the last param of this message may vary.
-		class UModeUnknownFlag : public std::exception {
-			public:
-				virtual const char *what() const throw() { return ":Internet_Relay_Chat 501 %client% :Unknown MODE flag"; };
-		};
-
-		/// @brief Indicates that a MODE command affecting a user failed because they were trying to set or view modes for other users. The text used in the last param of this message varies, for instance when trying to view modes for another user, a server may send: "Can't view modes for other users".
-		class UsersDontMatch : public std::exception {
-			public:
-				virtual const char *what() const throw() { return ":Internet_Relay_Chat 502 %client% :Cant change mode for other users"; };
-		};
-
-		/// @brief Indicates that a HELP command requested help on a subject the server does not know about. The <subject> MUST be the one requested by the client, but may be casefolded; unless it would be an invalid parameter, in which case it MUST be *.
-		class HelpNotFound : public std::exception {
-			public:
-				virtual const char *what() const throw() { return ":Internet_Relay_Chat 524 %client% %subject% :No help available on this topic"; };
-		};
-
-		/// @brief Indicates the value of a key channel mode change (+k) was rejected. Not to be confused with ERR_BADCHANNELKEY, which is returned when someone tries to join a channel.
-		class InvalidKey : public std::exception {
-			public:
-				virtual const char *what() const throw() { return ":Internet_Relay_Chat 525 %client% %target chan% :Key is not well-formed"; };
 		};
 
 		/// @brief Indicates that there was a problem with a mode parameter. Replaces various implementation-specific mode-specific numerics.

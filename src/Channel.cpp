@@ -106,7 +106,7 @@ void Channel::join(const User *user, const std::string &password) {
 	}
 
 	if (this->password != "" && password != this->password) {
-		throw(IrcException::PasswdMismatch());
+		throw(IrcException::BadChannelKey(this->name));
 	}
 
 	this->users.insert(user) ;
