@@ -137,8 +137,6 @@ void	Server::closeClient(int fd) {
 	this->users.erase(fd) ;
 }
 
-// TODO: Add throw and disconnect client if necessary
-// Diconnect are done in closeClient but maybe we should throw
 void	Server::receiveMsg(int fd) {
 	char buff[BUFFER_SIZE];
 	int readBytes = recv(fd, buff, sizeof(buff) - 1, 0);
@@ -148,11 +146,8 @@ void	Server::receiveMsg(int fd) {
 		this->QUIT(this->getUserByFd(fd), "read error", false) ;
 		return ;
 	}
-	// TODO CHANGE HERE
-	if (readBytes == 0) {
-		this->QUIT(this->getUserByFd(fd), "test", false) ;
+	if (readBytes == 0)
 		return ;
-	}
 
 	buff[readBytes] = '\0';
 	this->clientBuffers[fd] += buff;
