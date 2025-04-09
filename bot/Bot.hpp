@@ -1,5 +1,7 @@
 #pragma once
 
+#include "colors.h"
+
 #include <iostream>
 #include <string>
 #include <cstring>
@@ -13,12 +15,6 @@
 #include <sstream>
 #include <vector>
 #include <fstream>
-
-#define GREEN "\e[1;32m"
-#define BLUE "\e[1;34m"
-#define GRAY "\e[1;90m"
-#define CYAN "\e[1;96m"
-#define RESET "\e[0m"
 
 #define BUFFER_SIZE 128
 

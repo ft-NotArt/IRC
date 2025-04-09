@@ -4,6 +4,7 @@
 #include "User.hpp"
 #include "Errors.hpp"
 #include "Utils.hpp"
+#include "colors.h"
 
 class Channel ;
 class User ;
@@ -104,34 +105,34 @@ class Server {
 		void	handleCAP(std::stringstream &ssMessage, User *user) ;
 
 		void	handlePASS(std::stringstream &ssMessage, User *user) ;
-		
+
 		void	handleNICK(std::stringstream &ssMessage, User *user) ;
-		
+
 		void	handleUSER(std::stringstream &ssMessage, User *user) ;
-		
+
 		void	handlePING(std::stringstream &ssMessage, User *user) ;
-		
+
 		void	handleQUIT(std::stringstream &ssMessage, User *user) ;
 		void	QUIT(const User *client, const std::string &reason, bool requested);
-		
+
 		void	handlePRIVMSG(std::stringstream &ssMessage, User *user) ;
 		void 	PRIVMSG(const User *client, const std::vector<std::string> targets, std::string text);
-		
+
 		void	handleJOIN(std::stringstream &ssMessage, User *user) ;
 		void 	JOIN(const User *client, const std::string &channel, const std::string &key);
-		
+
 		void	handleINVITE(std::stringstream &ssMessage, User *user) ;
 		void	INVITE(const User *client, const std::string &nickname, const std::string &channel);
 
 		void	handlePART(std::stringstream &ssMessage, User *user) ;
 		void	PART(const User *client, const std::string &channel, const std::string &reason);
-		
+
 		void	handleKICK(std::stringstream &ssMessage, User *user) ;
 		void	KICK(const User *client, const std::string &channel, const std::string &kickedUser, const std::string &comment);
-		
+
 		void	handleTOPIC(std::stringstream &ssMessage, User *user) ;
 		void	TOPIC(const User *client, const std::string &channel, const std::string &topic, bool modify);
-		
+
 		void	handleMODE(std::stringstream &ssMessage, User *user) ;
 		void	MODE(const User *client, const std::string &channel, const std::vector<std::string> &modesArgs);
 
@@ -165,7 +166,7 @@ class Server {
 			public:
 				DisconnectClient(std::string reason) { this->reason = reason ; }
 				virtual ~DisconnectClient() throw() {}
-			
+
 				virtual const char *what() const throw() { return this->reason.c_str() ; } ;
 		} ;
 } ;

@@ -75,6 +75,4 @@ class Channel {
 		void	sendTopic(const User *user) ;
 
 		void	sendMsg(const User *user, const std::string &text) const ;
-
-		// TODO: Method PART (leave)
 } ;

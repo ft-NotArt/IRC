@@ -82,7 +82,7 @@ void	Bot::sendMsg(std::string msg) {
 	if (msg.empty())
 		return ;
 
-	std::cout << BLUE << "[BOT->SRV] `" << msg << "`" << RESET << std::endl;
+	std::cout << YELLOW << "[BOT->SRV] `" << msg << "`" << RESET << std::endl;
 	msg += "\r\n" ;
 	send(this->fd, msg.c_str(), msg.size(), 0);
 }
@@ -104,7 +104,7 @@ void	Bot::processMsg() {
 	size_t pos = this->buffer.find("\r\n");
 	while (pos != std::string::npos) {
 		std::stringstream ssMessage(this->buffer.substr(0, pos));
-		/* DEBUG */ std::cout << GREEN << "[SRV->BOT] `" << ssMessage.str() << "`" << RESET << std::endl;
+		/* DEBUG */ std::cout << BLUE << "[SRV->BOT] `" << ssMessage.str() << "`" << RESET << std::endl;
 		std::string command;
 		std::string origin;
 

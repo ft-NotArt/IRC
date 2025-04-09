@@ -4,35 +4,6 @@
 
 extern volatile int running ;
 
-/* Temp */
-#define GREEN "\e[1;32m"
-#define LIGHT_GREEN "\e[1;92m"
-#define LIGHT_RED "\e[1;91m"
-#define BLUE "\e[1;34m"
-#define GRAY "\e[1;90m"
-#define YELLOW "\e[1;93m"
-#define CYAN "\e[1;96m"
-#define RESET "\e[0m"
-
-#include <sstream>
-static std::string debugShowInvisibleChar(const std::string& buffer) {
-	std::ostringstream oss;
-
-	oss << "`";
-	for (std::size_t i = 0; i < buffer.length(); i++) {
-		if (buffer[i] == '\r')
-			oss << "\\r";  // Make carriage return visible
-		else if (buffer[i] == '\n')
-			oss << "\\n";  // Make newline visible and move to next line
-		else
-			oss << buffer[i];
-	}
-	oss << "`";
-	return oss.str();
-}
-/* End temp */
-
-
 /* Constructor */
 
 Server::Server(const std::string &password, const int port) : password(password), port(port) {
@@ -58,7 +29,7 @@ Server::~Server(void) {
 void Server::createSocket(void) {
 	this->socket = ::socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
 	if (this->socket < 0) {
-		std::cerr << "socket error: " << strerror(errno) << std::endl;
+		std::cerr << BOLD_RED << "socket error: " << strerror(errno) << RESET << std::endl;
 		return;
 	}
 
@@ -69,12 +40,12 @@ void Server::createSocket(void) {
 	servAddr.sin_port = htons(this->port);
 
 	if (bind(this->socket, (struct sockaddr *) &servAddr, sizeof(servAddr)) < 0) {
-		std::cerr << "bind error: " << strerror(errno) << std::endl;
+		std::cerr << BOLD_RED << "bind error: " << strerror(errno) << RESET << std::endl;
 		return;
 	}
 
 	if (listen(this->socket, MAX_CONNECTIONS) < 0) {
-		std::cerr << "listen error: " << strerror(errno) << std::endl;
+		std::cerr << BOLD_RED << "listen error: " << strerror(errno) << RESET << std::endl;
 		return;
 	}
 }
@@ -82,7 +53,7 @@ void Server::createSocket(void) {
 void Server::createEpoll(void) {
 	this->epollFd = epoll_create1(0);
 	if (this->epollFd < 0) {
-		std::cerr << "epoll_create error: " << strerror(errno) << std::endl;
+		std::cerr << BOLD_RED << "epoll_create error: " << strerror(errno) << RESET << std::endl;
 		return;
 	}
 
@@ -90,7 +61,7 @@ void Server::createEpoll(void) {
 	this->event.data.fd = this->socket;
 
 	if (epoll_ctl(this->epollFd, EPOLL_CTL_ADD, this->socket, &(this->event)) < 0) {
-		std::cerr << "epoll_ctl error: " << strerror(errno) << std::endl;
+		std::cerr << BOLD_RED << "epoll_ctl error: " << strerror(errno) << RESET << std::endl;
 		return;
 	}
 }
@@ -102,18 +73,16 @@ void Server::start(void) {
 
 void Server::run(void) {
 	while (running) {
-		std::cout << std::endl << CYAN "[DBUG|SERVER] Waiting for events..." << std::endl;
-
 		int numEvents = epoll_wait(this->epollFd, this->events, MAX_EVENTS, -1);
 		if (numEvents < 0) {
-			std::cerr << "epoll_wait error: " << strerror(errno) << std::endl;
+			std::cerr << std::endl << BOLD_RED << strerror(errno) << RESET << std::endl;
 			return;
 		}
 
 		for (int i = 0; i < numEvents; i++) {
 
 			if (this->events[i].events & (EPOLLHUP | EPOLLERR)) {
-				std::cout << "Client " << this->events[i].data.fd << " disconnected unexpectedly." << std::endl;
+				/* DEBUG */ std::cout << BOLD_RED << "[DBUG|CLI[" << this->events[i].data.fd << "]] Client " << this->events[i].data.fd  << " disconnected unexpectedly." << RESET << std::endl;
 				epoll_ctl(this->epollFd, EPOLL_CTL_DEL, this->events[i].data.fd, NULL);
 				close(this->events[i].data.fd);
 				this->clientBuffers.erase(this->events[i].data.fd);
@@ -136,13 +105,13 @@ void Server::acceptClient() {
 	socklen_t clientAddrLen ;
 
 	while ((clientSocket = accept(this->socket, (struct sockaddr *)&clientAddr, &clientAddrLen)) > 0) {
-		std::cout << "Accepted new client: " << clientSocket << std::endl;
+		std::cout << BOLD_GREEN << "[DBUG|CLI[" << clientSocket << "]] Client " << clientSocket << " connected." << RESET << std::endl;
 		epoll_event clientEvent;
 		clientEvent.events = EPOLLIN;
 		clientEvent.data.fd = clientSocket;
 
 		if (epoll_ctl(this->epollFd, EPOLL_CTL_ADD, clientSocket, &clientEvent) < 0) {
-			std::cerr << "epoll_ctl (client) error: " << strerror(errno) << std::endl;
+			std::cerr << BOLD_RED << "epoll_ctl (client) error: " << strerror(errno) << RESET << std::endl;
 			close(clientSocket);
 		}
 
@@ -151,7 +120,7 @@ void Server::acceptClient() {
 	}
 
 	if (clientSocket == -1 && (errno != EAGAIN && errno != EWOULDBLOCK)) {
-		std::cerr << "accept error: " << strerror(errno) << std::endl;
+		std::cerr << BOLD_RED << "accept error: " << strerror(errno) << RESET << std::endl;
 		return;
 	}
 }
@@ -160,7 +129,7 @@ void Server::acceptClient() {
  * @warning Check twice wether you want to call Server::QUIT(..., ..., false) or this one
  */
 void	Server::closeClient(int fd) {
-	std::cout << "Client " << fd << " disconnected." << std::endl;
+	std::cout << BOLD_RED << "[DBUG|CLI[" << fd << "]] Client " << fd << " disconnected." << RESET << std::endl;
 
 	epoll_ctl(this->epollFd, EPOLL_CTL_DEL, fd, NULL);
 	close(fd);
@@ -175,17 +144,17 @@ void	Server::receiveMsg(int fd) {
 	int readBytes = recv(fd, buff, sizeof(buff) - 1, 0);
 
 	if (readBytes < 0) {
-		std::cerr << "read error on fd " << fd << ": " << strerror(errno) << std::endl ;
+		std::cerr << BOLD_RED << "read error on fd " << fd << ": " << strerror(errno) << RESET << std::endl ;
 		this->QUIT(this->getUserByFd(fd), "read error", false) ;
 		return ;
 	}
+	// TODO CHANGE HERE
 	if (readBytes == 0) {
 		this->QUIT(this->getUserByFd(fd), "test", false) ;
 		return ;
 	}
 
 	buff[readBytes] = '\0';
-	/* DEBUG */ std::cout << GRAY << "[CLI[" << fd << "]->SRV/RAW] " << debugShowInvisibleChar(buff) << "\e[0m" << std::endl;
 	this->clientBuffers[fd] += buff;
 }
 
@@ -193,7 +162,7 @@ void	Server::processMsg(int fd) {
 	size_t pos = this->clientBuffers[fd].find("\r\n");
 	while (pos != std::string::npos) {
 		std::stringstream ssMessage(this->clientBuffers[fd].substr(0, pos));
-		/* DEBUG */ std::cout << GREEN << "[CLI[" << fd << "]->SRV] " << debugShowInvisibleChar(ssMessage.str()) << "\e[0m" << std::endl;
+		/* DEBUG */ std::cout << YELLOW << "[CLI[" << fd << "]->SRV] `" << ssMessage.str() << "`" << RESET << std::endl;
 		std::string command;
 
 		ssMessage >> command;
@@ -255,12 +224,11 @@ void	Server::sendMsg(int fd, std::string msg) const {
 	if (msg.empty() || !this->getUserByFd(fd))
 		return ;
 
+	std::cout << BLUE << "[SRV->CLI[" << fd << "]] `" << msg << "`" << RESET << std::endl;
+
 	msg += "\r\n" ;
-
-	std::cout << BLUE << "[SRV->CLI[" << fd << "]] " << debugShowInvisibleChar(msg) << "\e[0m" << std::endl;
-
 	if (send(fd, msg.c_str(), msg.size(), 0) < 0) {
-		std::cerr << LIGHT_RED << "send error: " << strerror(errno) << std::endl;
+		std::cerr << BOLD_RED << "send error: " << strerror(errno) << RESET << std::endl;
 		throw Server::DisconnectClient("send error") ;
 	}
 }

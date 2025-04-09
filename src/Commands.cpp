@@ -1,20 +1,5 @@
 #include "Server.hpp"
 
-/* Temp */
-#define GREEN "\e[1;32m"
-#define LIGHT_GREEN "\e[1;92m"
-#define LIGHT_RED "\e[1;91m"
-#define BLUE "\e[1;34m"
-#define GRAY "\e[1;90m"
-#define YELLOW "\e[1;93m"
-#define CYAN "\e[1;96m"
-#define RESET "\e[0m"
-
-#include <sstream>
-
-/* End temp */
-
-
 /* CAP */
 
 void	Server::handleCAP(std::stringstream &ssMessage, User *user) {
@@ -48,13 +33,11 @@ void	Server::handlePASS(std::stringstream &ssMessage, User *user) {
 		std::string password ;
 		std::getline(ssMessage, password) ;
 		password = trim(password) ;
-		
+
 		if (password.empty())
 			throw IrcException::NeedMoreParams() ;
 		else if (user->isRegistered())
 			throw IrcException::AlreadyRegistered() ;
-		
-		/* DEBUG */ std::cout << YELLOW "[DBUG|CLI[" << user->getFd() << "]] Password: `" << password << "`" << std::endl;
 		user->setPassword(password) ;
 	} CATCH_CMD(PASS)
 }
@@ -73,8 +56,6 @@ void	Server::handleNICK(std::stringstream &ssMessage, User *user) {
 			throw IrcException::ErroneusNickname(nick) ;
 		else if (this->getUser(nick))
 			throw IrcException::NicknameInUse(nick) ;
-		
-		/* DEBUG */ std::cout << YELLOW "[DBUG|CLI[" << user->getFd() << "]] Nick: `" << nick << "`" << std::endl;
 		user->setNickname(nick) ;
 	} CATCH_CMD(NICK)
 }
@@ -95,12 +76,9 @@ void	Server::handleUSER(std::stringstream &ssMessage, User *user) {
 		else if (user->getNickname().empty())
 			throw Server::DisconnectClient("Nickname error (invalid/empty)") ;
 
-		// /* DEBUG */ std::cout << YELLOW "[DBUG|CLI[" << fd << "]] User Old: `" << message.substr(std::strlen(MSG_CLI_USER) + 1, message.find(' ', std::strlen(MSG_CLI_USER) + 1)) << "`" << std::endl;
-		/* DEBUG */ std::cout << YELLOW "[DBUG|CLI[" << user->getFd() << "]] User: `" << username << "`" << std::endl;
-
 		user->setUsername(username) ;
 
-		/* DEBUG */ std::cout << LIGHT_GREEN << "[DBUG|CLI[" << user->getFd() << "]] Client " << user->getFd() << " authenticated successfully." << "\e[0m" << std::endl;
+		/* DEBUG */ std::cout << BOLD_GREEN << "[DBUG|CLI[" << user->getFd() << "]] Client " << user->getFd() << " authenticated successfully." << RESET << std::endl;
 
 		if (!user->isInCAP()) {
 			user->setRegistered(true) ;
@@ -112,7 +90,7 @@ void	Server::handleUSER(std::stringstream &ssMessage, User *user) {
 	} catch(const IrcException::PasswdMismatch &e) {
 		throw Server::DisconnectClient("Wrong Password") ;
 	} CATCH_CMD(USER)
-	
+
 }
 
 /* PING */
@@ -120,8 +98,6 @@ void	Server::handleUSER(std::stringstream &ssMessage, User *user) {
 void	Server::handlePING(std::stringstream &ssMessage, User *user) {
 	std::string token;
 	ssMessage >> token;
-
-	/* DEBUG */ std::cout << YELLOW "[DBUG|CLI[" << user->getFd() << "]] PING: Token: `" << token << "`" << std::endl;
 	this->MSG_PONG(user, token) ;
 }
 
@@ -136,8 +112,6 @@ void	Server::handleQUIT(std::stringstream &ssMessage, User *user) {
 	} catch (std::out_of_range &e) {
 		reason = "no reason" ;
 	}
-
-	/* DEBUG */ std::cout << YELLOW "[DBUG|CLI[" << user->getFd() << "]] QUIT: Reason: `" << reason << "`" << std::endl;
 	this->QUIT(user, reason, true) ;
 }
 
@@ -185,20 +159,10 @@ void	Server::handlePRIVMSG(std::stringstream &ssMessage, User *user) {
 		if (targets.empty())
 			throw IrcException::NoRecipient() ;
 
-		/* DEBUG */ std::cout << YELLOW << "[DBUG|CLI[" << user->getFd() << "]] PRIVMSG: Targets: ";
-		/* DEBUG */ for (std::vector<std::string>::iterator it = targets.begin(); it != targets.end(); it++) {
-		/* DEBUG */ 	std::cout << "`" << *it << "`";
-		/* DEBUG */ 	if (it != targets.end() - 1)
-		/* DEBUG */ 		std::cout << ", ";
-		/* DEBUG */ }
-		/* DEBUG */ std::cout << RESET << std::endl;
-
 		std::getline(ssMessage, tmp);
 		tmp = trim(tmp);
 		if (tmp.empty())
 			throw IrcException::NoTextToSend() ;
-
-		/* DEBUG */ std::cout << YELLOW "[DBUG|CLI[" << user->getFd() << "]] PRIVMSG: Text: `" << tmp << "`" << RESET << std::endl;
 
 		this->PRIVMSG(user, targets, tmp) ;
 	} CATCH_CMD(PRIVMSG)
@@ -281,7 +245,7 @@ void	Server::handleINVITE(std::stringstream &ssMessage, User *user) {
 			throw IrcException::NeedMoreParams() ;
 		if (channel[0] != '#')
 			throw IrcException::BadChanMask(channel) ;
-						
+
 		this->INVITE(user, nickname, channel) ;
 	} CATCH_CMD(INVITE)
 }
@@ -290,11 +254,11 @@ void	Server::INVITE(const User *client, const std::string &nickname, const std::
 	Channel *chan = this->getChannel(channel) ;
 	if (!chan)
 		throw IrcException::NoSuchChannel(channel) ;
-	
+
 	User *invited = this->getUser(nickname) ;
 	if (!invited)
 		throw IrcException::NoSuchNick(nickname) ;
-	
+
 	std::string msg(":") ;
 	msg += client->getFullname() ;
 	msg += " INVITE " ;
@@ -466,16 +430,16 @@ void	Server::handleMODE(std::stringstream &ssMessage, User *user) {
 		while (ssMessage >> tmp) {
 			modesArgs.push_back(tmp) ;
 		}
-		
+
 		this->MODE(user, channel, modesArgs) ;
-	} CATCH_CMD(MODE)	
+	} CATCH_CMD(MODE)
 }
 
 void	Server::MODE(const User *client, const std::string &channel, const std::vector<std::string> &modesArgs) {
 	Channel *chan = this->getChannel(channel);
 	if (!chan)
 		throw IrcException::NoSuchChannel(channel) ;
-	
+
 	if (modesArgs.empty()) {
 		this->RPL_CHANNELMODEIS(client, chan->getName(), chan->getModesString(), chan->getModesArgs());
 		return;
@@ -522,7 +486,7 @@ void	Server::MODE(const User *client, const std::string &channel, const std::vec
 					throw IrcException::NoSuchNick(modesArgs.at(argsIndex)) ;
 				if (!chan->isUserIn(target))
 					throw IrcException::UserNotInChannel(modesArgs.at(argsIndex), channel);
-				
+
 				addOrRm ? chan->addPerms(target, OPERATOR) : chan->removePerms(target, OPERATOR);
 				chan->addModesArgs(modesArgs.at(argsIndex++) + " ");
 				break;
@@ -547,7 +511,7 @@ void	Server::MODE(const User *client, const std::string &channel, const std::vec
 					throw IrcException::NoSuchNick(modesArgs.at(argsIndex)) ;
 				if (!chan->isUserIn(target))
 					throw IrcException::UserNotInChannel(modesArgs.at(argsIndex), channel);
-				
+
 				addOrRm ? chan->ban(client, target) : chan->removePerms(target, BANNED) ;
 				break;
 			}
