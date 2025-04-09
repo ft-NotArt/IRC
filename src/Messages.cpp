@@ -93,5 +93,5 @@ void	Server::MSG_TOPIC(const User *client, const Channel &channel, const std::st
 	msg += " " ;
 	msg += topic ;
 
-	channel.sendMsg(client, msg) ;
+	channel.sendMsg(NULL, msg) ;
 }
