@@ -104,6 +104,9 @@ void Server::acceptClient() {
 	struct sockaddr_in clientAddr ;
 	socklen_t clientAddrLen ;
 
+	bzero(&clientAddr, sizeof(clientAddr));
+	bzero(&clientAddrLen, sizeof(clientAddrLen));
+
 	while ((clientSocket = accept(this->socket, (struct sockaddr *)&clientAddr, &clientAddrLen)) > 0) {
 		std::cout << BOLD_GREEN << "[DBUG|CLI[" << clientSocket << "]] Client " << clientSocket << " connected." << RESET << std::endl;
 		epoll_event clientEvent;
