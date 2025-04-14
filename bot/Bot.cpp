@@ -110,6 +110,8 @@ void	Bot::processMsg() {
 
 		ssMessage >> origin >> command;
 
+		origin = origin.substr(0, origin.find('!')) ;
+
 		this->buffer.erase(0, pos + 2);
 		pos = this->buffer.find("\r\n");
 
